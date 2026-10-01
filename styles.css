@@ -39,11 +39,17 @@
   /* Easing tokens reused everywhere */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Theme-variant tokens - defaults match light mode */
+  --grain-opacity:     0.035;
+  --contact-text:      #F0F0ED;
+  --contact-sub:       rgba(240,240,237,0.6);
+  --theme-duration:    0.28s;
 }
 
-/* Dark mode - mandatory §6.C */
+/* Dark mode - OS preference fallback (no-JS path). SKILL §6.C mandatory */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg:            #111210;
     --bg-subtle:     #161714;
     --surface:       #1C1D1B;
@@ -56,7 +62,64 @@
     --accent-hover:  #66AFDE;
     --accent-subtle: #152130;
     --accent-fg:     #FFFFFF;
+    --grain-opacity: 0.05;
+    --contact-text:  #F0F0ED;
+    --contact-sub:   rgba(240,240,237,0.6);
   }
+}
+
+/* Manual dark override - beats OS preference. Applied before first paint via inline script. */
+[data-theme="dark"] {
+  --bg:            #111210;
+  --bg-subtle:     #161714;
+  --surface:       #1C1D1B;
+  --border:        #2A2B28;
+  --border-strong: #3D3E3A;
+  --text-primary:   #F0F0ED;
+  --text-secondary: #A8A8A2;
+  --text-muted:     #6A6A64;
+  --accent:        #4D9DD4;
+  --accent-hover:  #66AFDE;
+  --accent-subtle: #152130;
+  --accent-fg:     #FFFFFF;
+  --grain-opacity: 0.05;
+  --contact-text:  #F0F0ED;
+  --contact-sub:   rgba(240,240,237,0.6);
+}
+
+/* Manual light override - forces light even when OS is dark */
+[data-theme="light"] {
+  --bg:            #F7F7F5;
+  --bg-subtle:     #F0F0EE;
+  --surface:       #FFFFFF;
+  --border:        #E2E2DE;
+  --border-strong: #C8C8C2;
+  --text-primary:   #111210;
+  --text-secondary: #4A4A46;
+  --text-muted:     #767670;
+  --accent:        #2C6EAB;
+  --accent-hover:  #235A8F;
+  --accent-subtle: #EBF2FA;
+  --accent-fg:     #FFFFFF;
+  --grain-opacity: 0.035;
+  --contact-text:  #F0F0ED;
+  --contact-sub:   rgba(240,240,237,0.6);
+}
+
+/* color-scheme: tells the browser which native UI to render
+   (scrollbars, form inputs, selection color). Updates with theme. */
+:root                { color-scheme: light; }
+[data-theme="dark"]  { color-scheme: dark;  }
+[data-theme="light"] { color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { color-scheme: dark; }
+}
+
+/* Suppress theme transition during initial page load (class removed by JS after first paint) */
+.no-theme-transition *,
+.no-theme-transition *::before,
+.no-theme-transition *::after {
+  transition: none !important;
 }
 
 /* Reduced motion: collapse everything - mandatory §6.B */
@@ -71,6 +134,11 @@
   .particle-canvas,
   .cursor-glow {
     display: none !important;
+  }
+  /* Keep theme toggle icon swap instant */
+  .theme-toggle .icon-sun,
+  .theme-toggle .icon-moon {
+    transition: none !important;
   }
 }
 
@@ -90,6 +158,10 @@ body {
   background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
   cursor: none; /* custom cursor active on desktop */
+  /* Theme transition: only color properties, never layout. SKILL §6.A */
+  transition:
+    background-color var(--theme-duration) ease,
+    color            var(--theme-duration) ease;
 }
 
 /* Restore cursor on touch devices */
@@ -177,7 +249,7 @@ body.cursor-clicking .cursor-dot {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: var(--grain-opacity);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 200px 200px;
@@ -288,6 +360,77 @@ body.cursor-clicking .cursor-dot {
 .nav-toggle[aria-expanded="true"] span:first-child { transform: translateY(6.5px) rotate(45deg); }
 .nav-toggle[aria-expanded="true"] span:last-child  { transform: translateY(-6.5px) rotate(-45deg); }
 
+/* ── Theme toggle button ──────────────────────────────────────
+   Icon-only. No text label (SKILL §9.F - no eyebrow text).
+   Accessible via aria-label updated by JS.
+   Sun and moon icons crossfade via opacity - only opacity
+   animated, no layout shift. SKILL §6.A.
+   ──────────────────────────────────────────────────────────── */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: none;
+  color: var(--text-secondary);
+  transition:
+    border-color    var(--theme-duration) ease,
+    background-color 0.15s ease,
+    color            0.15s ease,
+    transform        0.2s var(--ease-spring);
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  transform: scale(1.08);
+}
+
+.theme-toggle:active {
+  transform: scale(0.93);
+}
+
+/* Two icons: one visible at a time, crossfade on swap */
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  transition: opacity 0.2s ease, transform 0.3s var(--ease-spring);
+}
+
+.theme-toggle {
+  position: relative; /* for absolute icon children */
+}
+
+/* Light mode: show sun (current state), hide moon (what clicking gives) */
+:root:not([data-theme="dark"]) .theme-toggle .icon-sun  { opacity: 1;  transform: rotate(0deg)   scale(1);    }
+:root:not([data-theme="dark"]) .theme-toggle .icon-moon { opacity: 0;  transform: rotate(-30deg) scale(0.7);  }
+
+/* Dark mode: hide sun, show moon */
+[data-theme="dark"] .theme-toggle .icon-sun  { opacity: 0;  transform: rotate(30deg)  scale(0.7);  }
+[data-theme="dark"] .theme-toggle .icon-moon { opacity: 1;  transform: rotate(0deg)   scale(1);    }
+
+/* OS-dark, no JS data-theme yet */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .icon-sun  { opacity: 0;  transform: rotate(30deg)  scale(0.7); }
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .icon-moon { opacity: 1;  transform: rotate(0deg)   scale(1);   }
+}
+
+/* Nav right cluster: links + toggle + hamburger */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .mobile-menu {
   display: none;
   flex-direction: column;
@@ -379,7 +522,7 @@ body.cursor-clicking .cursor-dot {
   padding: 10px 20px;
   cursor: none;
   background: transparent;
-  color: #F0F0ED;
+  color: var(--contact-text);
   border: 1.5px solid rgba(255,255,255,0.3);
   position: relative;
   overflow: hidden;
@@ -1090,14 +1233,14 @@ body.cursor-clicking .cursor-dot {
   font-size: clamp(2rem, 4vw + 0.5rem, 3.25rem);
   font-weight: 600;
   letter-spacing: -0.03em;
-  color: #F0F0ED;
+  color: var(--contact-text);
   line-height: 1.1;
   margin-bottom: 16px;
   max-width: 18ch;
 }
 .contact-sub {
   font-size: 1rem;
-  color: rgba(240,240,237,0.65);
+  color: var(--contact-sub);
   line-height: 1.6;
   max-width: 60ch;
   margin-bottom: 36px;

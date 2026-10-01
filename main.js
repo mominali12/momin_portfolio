@@ -28,6 +28,47 @@
   const isTouchDevice = window.matchMedia('(hover: none)').matches;
 
   /* ─────────────────────────────────────────────
+     0. THEME TOGGLE
+     Reads/writes data-theme on <html>.
+     Persists to localStorage. Updates aria-label.
+     The inline <head> script already applied the
+     saved theme before first paint (no FODT).
+  ───────────────────────────────────────────── */
+  (function initThemeToggle() {
+    const btn  = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+    if (!btn) return;
+
+    function getTheme() {
+      // data-theme was set by the inline head script; read it as source of truth
+      return root.getAttribute('data-theme') || 'light';
+    }
+
+    function applyTheme(theme) {
+      root.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      btn.setAttribute(
+        'aria-label',
+        theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+      );
+    }
+
+    // Sync aria-label on load (inline script set data-theme but not aria-label)
+    applyTheme(getTheme());
+
+    btn.addEventListener('click', () => {
+      const next = getTheme() === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+
+    // Respond to OS preference changes if user has not saved a manual preference
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (localStorage.getItem('theme')) return; // user has a manual preference, don't override
+      applyTheme(e.matches ? 'dark' : 'light');
+    });
+  }());
+
+  /* ─────────────────────────────────────────────
      1. CUSTOM CURSOR
      Two-layer: small dot (fast) + ring (lagged)
      Motivation: premium feel, consistent with magnetic buttons

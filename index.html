@@ -44,6 +44,27 @@
   <script>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>
   <script defer src="/_vercel/speed-insights/script.js"></script>
 
+  <!--
+    FODT prevention: read saved theme before first paint so tokens are
+    correct before CSS renders. Must be synchronous, inline, in <head>.
+    .no-theme-transition suppresses the color transition on load so
+    there is no flash; it is removed after the first paint.
+  -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.classList.add('no-theme-transition');
+      window.addEventListener('load', function() {
+        requestAnimationFrame(function() {
+          document.documentElement.classList.remove('no-theme-transition');
+        });
+      }, { once: true });
+    })();
+  </script>
+
   <!-- Fonts: Geist + Geist Mono via fontsource CDN (self-hostable in prod) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,15 +81,43 @@
       <span class="brandmark-initials" aria-hidden="true">MA</span>
       Momin Ali
     </a>
-    <div class="nav-links" role="list">
-      <a href="#work" role="listitem">Work</a>
-      <a href="#capabilities" role="listitem">Capabilities</a>
-      <a href="#recognition" role="listitem">Recognition</a>
-      <a href="#contact" role="listitem">Contact</a>
+    <div class="nav-right">
+      <div class="nav-links" role="list">
+        <a href="#work" role="listitem">Work</a>
+        <a href="#capabilities" role="listitem">Capabilities</a>
+        <a href="#recognition" role="listitem">Recognition</a>
+        <a href="#contact" role="listitem">Contact</a>
+      </div>
+
+      <!-- Theme toggle: icon-only, aria-label updated by JS -->
+      <button
+        class="theme-toggle"
+        id="theme-toggle"
+        aria-label="Switch to dark mode"
+        title="Toggle theme"
+      >
+        <!-- Sun icon: shown in light mode -->
+        <svg class="icon-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <circle cx="8" cy="8" r="3"/>
+          <line x1="8"  y1="1"   x2="8"  y2="2.5"/>
+          <line x1="8"  y1="13.5" x2="8"  y2="15"/>
+          <line x1="1"  y1="8"   x2="2.5" y2="8"/>
+          <line x1="13.5" y1="8" x2="15" y2="8"/>
+          <line x1="2.93" y1="2.93" x2="3.99" y2="3.99"/>
+          <line x1="12.01" y1="12.01" x2="13.07" y2="13.07"/>
+          <line x1="13.07" y1="2.93" x2="12.01" y2="3.99"/>
+          <line x1="3.99" y1="12.01" x2="2.93" y2="13.07"/>
+        </svg>
+        <!-- Moon icon: shown in dark mode -->
+        <svg class="icon-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M13.5 10A6 6 0 0 1 6 2.5a6 6 0 1 0 7.5 7.5Z"/>
+        </svg>
+      </button>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span>
+      </button>
     </div>
-    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
-      <span></span><span></span>
-    </button>
   </div>
   <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
     <a href="#work">Work</a>
