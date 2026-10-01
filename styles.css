@@ -1,49 +1,47 @@
 /* ============================================================
    DESIGN TOKENS
-   One accent (steel blue, fits the maritime/acoustics domain).
-   One corner-radius scale. One palette. Shape + color consistency locked.
-   SKILL §4.2 Color Consistency Lock / §4.4 Shape Consistency Lock
+   One accent (steel blue). One radius scale. One palette.
+   Color + Shape consistency locked. SKILL §4.2 §4.4
    ============================================================ */
 
 :root {
-  /* Background + surface */
-  --bg:          #F7F7F5;   /* warm off-white, NOT pure #fff */
-  --bg-subtle:   #F0F0EE;   /* section tint */
-  --surface:     #FFFFFF;
-  --border:      #E2E2DE;
+  --bg:            #F7F7F5;
+  --bg-subtle:     #F0F0EE;
+  --surface:       #FFFFFF;
+  --border:        #E2E2DE;
   --border-strong: #C8C8C2;
 
-  /* Text */
-  --text-primary:   #111210;  /* near-black, NOT pure #000000 */
+  --text-primary:   #111210;
   --text-secondary: #4A4A46;
   --text-muted:     #767670;
 
-  /* Accent: steel blue - fits maritime acoustics, one color, whole page */
   --accent:        #2C6EAB;
   --accent-hover:  #235A8F;
   --accent-subtle: #EBF2FA;
   --accent-fg:     #FFFFFF;
 
-  /* One corner-radius scale. SKILL §4.4 */
-  --radius-sm:  4px;
-  --radius-md:  8px;
-  --radius-lg:  14px;
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   14px;
   --radius-pill: 999px;
 
-  /* Z-index: named layers only, no arbitrary z-50 spam. SKILL §6.F */
-  --z-nav: 50;
+  --z-nav:     50;
+  --z-canvas:   0;
+  --z-grain:   60;
 
-  /* Type */
   --font-sans: "Geist", system-ui, -apple-system, sans-serif;
   --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
 
-  /* Spacing rhythm */
   --section-py: 96px;
   --wrap-max:   1200px;
   --wrap-px:    24px;
+
+  /* Easing tokens reused everywhere */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Dark mode tokens - mandatory. SKILL §6.C / §8 */
+/* Dark mode - mandatory §6.C */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg:            #111210;
@@ -51,11 +49,9 @@
     --surface:       #1C1D1B;
     --border:        #2A2B28;
     --border-strong: #3D3E3A;
-
     --text-primary:   #F0F0ED;
     --text-secondary: #A8A8A2;
     --text-muted:     #6A6A64;
-
     --accent:        #4D9DD4;
     --accent-hover:  #66AFDE;
     --accent-subtle: #152130;
@@ -63,7 +59,7 @@
   }
 }
 
-/* Reduced motion: collapse all animations. SKILL §6.B - mandatory */
+/* Reduced motion: collapse everything - mandatory §6.B */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -71,22 +67,20 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .hero-grain,
+  .particle-canvas,
+  .cursor-glow {
+    display: none !important;
+  }
 }
 
 /* ============================================================
    RESET + BASE
    ============================================================ */
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: var(--font-sans);
@@ -95,17 +89,67 @@ body {
   color: var(--text-primary);
   background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
-  /* Page theme lock: ONE background, whole page. SKILL §4.11 */
+  cursor: none; /* custom cursor active on desktop */
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* Restore cursor on touch devices */
+@media (hover: none) {
+  body { cursor: auto; }
+  .cursor-glow { display: none; }
 }
 
-img, svg {
-  display: block;
-  max-width: 100%;
+a { color: inherit; text-decoration: none; }
+img, svg { display: block; max-width: 100%; }
+
+/* ============================================================
+   CUSTOM CURSOR
+   Motivation: premium tactile feel; magnetic buttons reinforce it
+   ============================================================ */
+
+.cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s var(--ease-out-expo),
+              width 0.2s var(--ease-spring),
+              height 0.2s var(--ease-spring),
+              background-color 0.15s ease;
+  will-change: transform;
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  width: 36px; height: 36px;
+  border: 1.5px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.18s var(--ease-out-expo),
+              width 0.25s var(--ease-spring),
+              height 0.25s var(--ease-spring),
+              border-color 0.15s ease,
+              opacity 0.15s ease;
+  will-change: transform;
+}
+
+/* Cursor states */
+body.cursor-hover .cursor-dot {
+  width: 12px; height: 12px;
+  background: var(--accent);
+}
+body.cursor-hover .cursor-ring {
+  width: 52px; height: 52px;
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+body.cursor-clicking .cursor-dot {
+  transform: translate(-50%, -50%) scale(0.7);
 }
 
 /* ============================================================
@@ -118,43 +162,51 @@ img, svg {
   padding-inline: var(--wrap-px);
 }
 
-.section {
-  padding-block: var(--section-py);
-}
+.section       { padding-block: var(--section-py); }
+.section-subtle { background-color: var(--bg-subtle); }
 
-.section-subtle {
-  background-color: var(--bg-subtle);
+/* ============================================================
+   NOISE GRAIN OVERLAY
+   Motivation: materiality - adds depth to flat color backgrounds,
+   prevents the "printed on screen" look. Fixed pseudo-element so
+   it never causes layout repaints. SKILL §6.E DOM cost rule.
+   ============================================================ */
+
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  mix-blend-mode: overlay;
 }
 
 /* ============================================================
    NAV
-   Single line at desktop, ≤80px height. SKILL §4.7
-   Scroll-hide behavior in JS.
    ============================================================ */
 
 .nav {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   z-index: var(--z-nav);
-  background-color: color-mix(in srgb, var(--bg) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   border-bottom: 1px solid var(--border);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+  transition: transform 0.35s var(--ease-out-expo),
               background-color 0.2s ease;
 }
 
-.nav.hidden {
-  transform: translateY(-100%);
-}
+.nav.hidden { transform: translateY(-100%); }
 
 .nav-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;  /* ≤80px. SKILL §4.7 */
+  height: 64px;
 }
 
 .brandmark {
@@ -165,14 +217,15 @@ img, svg {
   font-size: 0.9rem;
   letter-spacing: -0.01em;
   color: var(--text-primary);
+  transition: opacity 0.15s ease;
 }
+.brandmark:hover { opacity: 0.75; }
 
 .brandmark-initials {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 28px; height: 28px;
   background: var(--accent);
   color: var(--accent-fg);
   border-radius: var(--radius-sm);
@@ -180,72 +233,60 @@ img, svg {
   font-weight: 600;
   font-family: var(--font-mono);
   letter-spacing: 0;
+  /* Micro: subtle pulse on load to draw attention once */
+  animation: brand-pulse 2s var(--ease-out-expo) forwards;
 }
 
-.nav-links {
-  display: flex;
-  gap: 32px;
+@keyframes brand-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  60%  { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }
+
+.nav-links { display: flex; gap: 32px; }
 
 .nav-links a {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
-  transition: color 0.15s ease;
   position: relative;
+  padding-block: 4px;
+  transition: color 0.15s ease;
 }
 
 .nav-links a::after {
   content: '';
   position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1.5px;
+  bottom: -1px; left: 0;
+  width: 0; height: 1.5px;
   background: var(--accent);
-  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.25s var(--ease-out-expo);
 }
-
 .nav-links a:hover,
-.nav-links a.active {
-  color: var(--text-primary);
-}
-
+.nav-links a.active      { color: var(--text-primary); }
 .nav-links a:hover::after,
-.nav-links a.active::after {
-  width: 100%;
-}
+.nav-links a.active::after { width: 100%; }
 
-/* Mobile menu toggle */
 .nav-toggle {
   display: none;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  width: 32px;
-  height: 32px;
+  width: 32px; height: 32px;
   background: none;
   border: none;
-  cursor: pointer;
+  cursor: none;
   padding: 4px;
 }
-
 .nav-toggle span {
   display: block;
-  width: 100%;
-  height: 1.5px;
+  width: 100%; height: 1.5px;
   background: var(--text-primary);
   transition: transform 0.2s ease, opacity 0.2s ease;
   transform-origin: center;
 }
-
-.nav-toggle[aria-expanded="true"] span:first-child {
-  transform: translateY(6.5px) rotate(45deg);
-}
-
-.nav-toggle[aria-expanded="true"] span:last-child {
-  transform: translateY(-6.5px) rotate(-45deg);
-}
+.nav-toggle[aria-expanded="true"] span:first-child { transform: translateY(6.5px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:last-child  { transform: translateY(-6.5px) rotate(-45deg); }
 
 .mobile-menu {
   display: none;
@@ -254,7 +295,6 @@ img, svg {
   gap: 4px;
   border-top: 1px solid var(--border);
 }
-
 .mobile-menu a {
   font-size: 1rem;
   font-weight: 500;
@@ -262,51 +302,60 @@ img, svg {
   padding-block: 10px;
   border-bottom: 1px solid var(--border);
 }
-
-.mobile-menu a:last-child {
-  border-bottom: none;
-}
-
-.mobile-menu.open {
-  display: flex;
-}
+.mobile-menu a:last-child { border-bottom: none; }
+.mobile-menu.open { display: flex; }
 
 /* ============================================================
    BUTTONS
-   WCAG AA contrast checked. No white-on-white. One label per intent. SKILL §4.5
+   Magnetic effect applied via JS. WCAG AA contrast checked.
    ============================================================ */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  white-space: nowrap;          /* CTA wrap ban. SKILL §4.5 */
+  white-space: nowrap;
   font-family: var(--font-sans);
   font-size: 0.875rem;
   font-weight: 600;
   border-radius: var(--radius-md);
   padding: 10px 20px;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  cursor: none;
   border: 1.5px solid transparent;
+  position: relative;
+  overflow: hidden;
+  /* Magnetic positioning handled by JS transform */
+  transition: transform 0.4s var(--ease-spring),
+              box-shadow 0.2s ease,
+              background-color 0.15s ease;
 }
 
-/* Active state: tactile push. SKILL §4.5 */
-.btn:active {
-  transform: scale(0.98);
+/* Directional fill: shimmer enters from left on hover */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in srgb, white 12%, transparent) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s var(--ease-out-expo);
+  pointer-events: none;
 }
+.btn:hover::before { transform: translateX(100%); }
+
+.btn:active { transform: scale(0.97) !important; }
 
 .btn-primary {
   background: var(--accent);
-  color: var(--accent-fg);       /* white on steel blue: contrast ≈7:1, WCAG AA pass */
+  color: var(--accent-fg);
   border-color: var(--accent);
 }
-
 .btn-primary:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .btn-ghost {
@@ -314,14 +363,11 @@ img, svg {
   color: var(--text-primary);
   border-color: var(--border-strong);
 }
-
 .btn-ghost:hover {
   background: var(--bg-subtle);
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
+  border-color: var(--accent);
 }
 
-/* Inverted ghost for dark contact section */
 .btn-ghost-inv {
   display: inline-flex;
   align-items: center;
@@ -331,26 +377,33 @@ img, svg {
   font-weight: 600;
   border-radius: var(--radius-md);
   padding: 10px 20px;
-  cursor: pointer;
+  cursor: none;
   background: transparent;
-  color: var(--accent-fg);
-  border: 1.5px solid rgba(255,255,255,0.35);
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  color: #F0F0ED;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.15s ease, transform 0.4s var(--ease-spring);
 }
-
-.btn-ghost-inv:hover {
-  background: rgba(255,255,255,0.1);
-  transform: translateY(-1px);
+.btn-ghost-inv::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.08) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s var(--ease-out-expo);
+  pointer-events: none;
 }
-
-.btn-ghost-inv:active {
-  transform: scale(0.98);
-}
+.btn-ghost-inv:hover::before { transform: translateX(100%); }
+.btn-ghost-inv:hover { background: rgba(255,255,255,0.1); }
+.btn-ghost-inv:active { transform: scale(0.97) !important; }
 
 /* ============================================================
    HERO
-   Split layout - text left, stats right. SKILL §4.3 anti-center bias.
-   min-h: 100dvh, NOT h-screen. SKILL §3.E viewport stability.
+   Canvas particle field lives here as a sibling to .hero-inner.
    ============================================================ */
 
 .hero {
@@ -358,20 +411,78 @@ img, svg {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-top: 64px; /* nav height offset */
+  padding-top: 64px;
   position: relative;
   overflow: hidden;
 }
 
-.hero-inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;  /* 50/50 split */
-  gap: 64px;
-  align-items: center;
-  padding-block: 80px 120px; /* pt max ~pt-24 equiv. SKILL §4.7 hero top padding cap */
+/* Particle canvas: absolutely positioned, GPU-composited */
+.particle-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Animate only opacity to avoid layout. SKILL §6.A */
+  animation: canvas-fade-in 1.2s var(--ease-out-expo) forwards;
+  opacity: 0;
 }
 
-/* Award pill: surfaces the credential in the first viewport. SKILL §4.7 hero stack discipline */
+@keyframes canvas-fade-in {
+  to { opacity: 1; }
+}
+
+/* Spotlight cursor glow: CSS radial gradient that follows cursor via JS custom property */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(
+    600px circle at var(--cursor-x, 50%) var(--cursor-y, 30%),
+    color-mix(in srgb, var(--accent) 8%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+  transition: background 0.1s ease;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  padding-block: 80px 120px;
+}
+
+/* Hero content: stagger-in on load */
+.hero-content > * {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: hero-enter 0.7s var(--ease-out-expo) forwards;
+}
+.hero-content > *:nth-child(1) { animation-delay: 0.1s; }
+.hero-content > *:nth-child(2) { animation-delay: 0.22s; }
+.hero-content > *:nth-child(3) { animation-delay: 0.32s; }
+.hero-content > *:nth-child(4) { animation-delay: 0.42s; }
+.hero-content > *:nth-child(5) { animation-delay: 0.50s; }
+
+@keyframes hero-enter {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero stats: fade in from right */
+.hero-stats {
+  opacity: 0;
+  transform: translateX(20px);
+  animation: stats-enter 0.8s var(--ease-out-expo) 0.3s forwards;
+}
+
+@keyframes stats-enter {
+  to { opacity: 1; transform: translateX(0); }
+}
+
 .award-pill {
   display: inline-flex;
   align-items: center;
@@ -386,20 +497,27 @@ img, svg {
   padding: 5px 12px;
   margin-bottom: 24px;
   width: fit-content;
-  transition: background-color 0.15s ease;
+  /* Micro: gentle pulse to draw attention once */
+  animation: hero-enter 0.7s var(--ease-out-expo) 0.1s forwards,
+             pill-glow 2.5s var(--ease-out-expo) 1s;
+  transition: background-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+@keyframes pill-glow {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent); }
+  50%  { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }
 
 .award-pill:hover {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
-.award-star {
-  font-size: 0.8rem;
-}
+.award-star { font-size: 0.8rem; }
 
-/* Hero headline: display scale, tracking tight. SKILL §4.1 */
 .hero-headline {
-  font-size: clamp(2.5rem, 4vw + 1rem, 3.75rem); /* max ~60px, ≤2 lines. SKILL §4.7 */
+  font-size: clamp(2.5rem, 4vw + 1rem, 3.75rem);
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: -0.03em;
@@ -407,14 +525,12 @@ img, svg {
   margin-bottom: 20px;
 }
 
-/* NO em-dash anywhere. SKILL §9.G */
 .hero-sub {
   font-size: 1rem;
   color: var(--text-secondary);
   line-height: 1.6;
   max-width: 52ch;
   margin-bottom: 32px;
-  /* ≤20 words enforced in markup. SKILL §4.7 */
 }
 
 .hero-cta {
@@ -428,10 +544,9 @@ img, svg {
   font-size: 0.8rem;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  /* No decorative dot/live indicator. SKILL §9.F */
 }
 
-/* Stats grid - 2×2 */
+/* Stats 2x2 grid */
 .hero-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -448,13 +563,15 @@ img, svg {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  transition: background-color 0.2s ease;
 }
+.stat-cell:hover { background: var(--accent-subtle); }
 
 .stat-n {
   font-family: var(--font-mono);
   font-size: 2.25rem;
   font-weight: 500;
-  color: var(--accent);            /* accent used consistently. SKILL §4.2 */
+  color: var(--accent);
   letter-spacing: -0.02em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -466,25 +583,24 @@ img, svg {
   line-height: 1.4;
 }
 
-/* Acoustic wave: motivated by the ship-acoustics domain */
 .hero-wave {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100px;
+  bottom: 0; left: 0;
+  width: 100%; height: 100px;
   pointer-events: none;
+  z-index: 2;
 }
 
 /* ============================================================
    THESIS
-   Full-width editorial statement. Different layout family from hero.
    ============================================================ */
 
 .thesis {
   padding-block: 72px;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
 
 .thesis-lead {
@@ -495,11 +611,7 @@ img, svg {
   max-width: 72ch;
   margin-bottom: 16px;
 }
-
-.thesis-lead strong {
-  color: var(--accent);
-  font-weight: 600;
-}
+.thesis-lead strong { color: var(--accent); font-weight: 600; }
 
 .thesis-body {
   font-size: 1rem;
@@ -510,7 +622,6 @@ img, svg {
 
 /* ============================================================
    SECTION TITLES
-   No eyebrow labels. Title stands alone. SKILL §9.F / frontend-design skill.
    ============================================================ */
 
 .section-title {
@@ -523,8 +634,8 @@ img, svg {
 
 /* ============================================================
    WORK GRID
-   Asymmetric: award card full-width, others in offset 2-col.
-   Not three equal cards. SKILL §9.C.
+   Award card full-width, 2-col offset for the rest.
+   Spotlight border: illuminates from cursor position via JS.
    ============================================================ */
 
 .work-grid {
@@ -535,37 +646,53 @@ img, svg {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  /* Stagger grid reveal handled in JS */
 }
 
-/* Cards: elevation only where hierarchy demands it. SKILL §4.4 */
 .card {
   background: var(--surface);
   padding: 32px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: background-color 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.2s ease;
+  /* Spotlight border via CSS custom property set by JS */
 }
 
-.card:hover {
-  background: var(--bg-subtle);
+/* Spotlight border: radial gradient that follows cursor inside each card */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  border: 1px solid transparent;
+  background:
+    radial-gradient(
+      400px circle at var(--card-x, -200px) var(--card-y, -200px),
+      color-mix(in srgb, var(--accent) 30%, transparent),
+      transparent 60%
+    ) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
 }
+.card:hover::after { opacity: 1; }
 
-/* Tactile lift: subtle, not flashy. SKILL §4.5 */
-.card:hover .metric-value {
-  color: var(--accent);
-}
+.card:hover { background: color-mix(in srgb, var(--bg-subtle) 80%, var(--surface)); }
 
-/* Award card: spans full width, distinct visual treatment */
+/* Metric value lights up on card hover */
+.card:hover .metric-value { color: var(--accent); }
+
 .card-award {
   grid-column: 1 / -1;
   background: var(--accent-subtle);
-  border-bottom: 2px solid var(--border);
 }
-
-.card-award:hover {
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-}
+.card-award:hover { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
 
 .card-award-inner {
   display: flex;
@@ -573,7 +700,6 @@ img, svg {
   justify-content: space-between;
   gap: 32px;
 }
-
 .card-award-content {
   flex: 1;
   display: flex;
@@ -581,6 +707,7 @@ img, svg {
   gap: 12px;
 }
 
+/* Award badge: gentle float animation */
 .card-award-badge {
   flex-shrink: 0;
   display: flex;
@@ -593,6 +720,12 @@ img, svg {
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--accent) 8%, var(--surface));
   min-width: 110px;
+  animation: badge-float 4s ease-in-out infinite;
+}
+
+@keyframes badge-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
 }
 
 .badge-star {
@@ -600,7 +733,6 @@ img, svg {
   color: var(--accent);
   line-height: 1;
 }
-
 .badge-text {
   font-size: 0.7rem;
   font-family: var(--font-mono);
@@ -610,16 +742,9 @@ img, svg {
   text-align: center;
 }
 
-/* .card-wide spans both columns */
-.card-wide {
-  grid-column: 1 / -1;
-}
+.card-wide { grid-column: 1 / -1; }
 
-.card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .tag {
   font-size: 0.7rem;
@@ -630,6 +755,11 @@ img, svg {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 2px 8px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.card:hover .tag {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .card h3 {
@@ -639,7 +769,6 @@ img, svg {
   color: var(--text-primary);
   line-height: 1.3;
 }
-
 .card p {
   font-size: 0.9rem;
   color: var(--text-secondary);
@@ -655,17 +784,15 @@ img, svg {
   padding-top: 16px;
   border-top: 1px solid var(--border);
 }
-
 .metric-value {
   font-family: var(--font-mono);
   font-size: 1.5rem;
   font-weight: 500;
   color: var(--text-primary);
   letter-spacing: -0.02em;
-  transition: color 0.15s ease;
+  transition: color 0.2s ease;
   font-variant-numeric: tabular-nums;
 }
-
 .metric-label {
   font-size: 0.78rem;
   color: var(--text-muted);
@@ -674,7 +801,7 @@ img, svg {
 
 /* ============================================================
    CAPABILITIES
-   Pill chips instead of <ul> bullets for >5 items. SKILL §4.9.
+   Pill shimmer on hover. SKILL §4.9 - chips not bullets.
    ============================================================ */
 
 .caps-grid {
@@ -691,14 +818,9 @@ img, svg {
   letter-spacing: 0.04em;
   margin-bottom: 16px;
   text-transform: uppercase;
-  /* One eyebrow equivalent allowed per 3 sections - this is the only section with caps treatment. SKILL §4.7 */
 }
 
-.pill-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .pill {
   font-size: 0.8rem;
@@ -708,19 +830,40 @@ img, svg {
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   padding: 5px 12px;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  position: relative;
+  overflow: hidden;
   cursor: default;
+  transition: border-color 0.2s ease,
+              color 0.2s ease,
+              transform 0.25s var(--ease-spring),
+              box-shadow 0.2s ease;
 }
 
+/* Shimmer sweep on hover */
+.pill::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 80%; height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 15%, transparent),
+    transparent
+  );
+  transition: left 0.45s var(--ease-out-expo);
+  pointer-events: none;
+}
+.pill:hover::before { left: 140%; }
 .pill:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: var(--accent-subtle);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 /* ============================================================
    RECOGNITION
-   Asymmetric left/right layout. Different family from work grid.
    ============================================================ */
 
 .rec-layout {
@@ -732,10 +875,14 @@ img, svg {
 
 .rec-award-block {
   padding: 40px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
   border-radius: var(--radius-lg);
   background: var(--accent-subtle);
-  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+  transition: box-shadow 0.25s ease, transform 0.25s var(--ease-spring);
+}
+.rec-award-block:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .rec-award-label {
@@ -746,14 +893,12 @@ img, svg {
   line-height: 1.1;
   margin-bottom: 8px;
 }
-
 .rec-award-venue {
   font-size: 0.85rem;
   font-family: var(--font-mono);
   color: var(--text-secondary);
   margin-bottom: 16px;
 }
-
 .rec-award-desc {
   font-size: 0.9rem;
   color: var(--text-secondary);
@@ -766,7 +911,6 @@ img, svg {
   gap: 40px;
   padding-top: 8px;
 }
-
 .rec-venues-label {
   font-size: 0.75rem;
   font-family: var(--font-mono);
@@ -776,13 +920,7 @@ img, svg {
   text-transform: uppercase;
   margin-bottom: 12px;
 }
-
-.venue-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
+.venue-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .venue-chip {
   font-size: 0.8rem;
   font-family: var(--font-mono);
@@ -792,7 +930,9 @@ img, svg {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 5px 12px;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
+.venue-chip:hover { border-color: var(--accent); color: var(--accent); }
 
 .cert-list {
   list-style: none;
@@ -800,7 +940,6 @@ img, svg {
   flex-direction: column;
   gap: 8px;
 }
-
 .cert-list li {
   font-size: 0.875rem;
   color: var(--text-secondary);
@@ -808,26 +947,42 @@ img, svg {
   padding-left: 14px;
   position: relative;
 }
-
 .cert-list li::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0.55em;
-  width: 4px;
-  height: 4px;
+  left: 0; top: 0.55em;
+  width: 4px; height: 4px;
   border-radius: 50%;
   background: var(--accent);
 }
 
 /* ============================================================
-   EXPERIENCE
-   Timeline: different layout family from work and recognition.
+   EXPERIENCE - Timeline with animated draw line
+   Motivation: the line draws as you scroll, reinforcing
+   the chronological narrative of the career.
    ============================================================ */
 
 .timeline {
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+/* The vertical line that gets drawn via clip-path animation */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent), var(--border));
+  transform-origin: top center;
+  transform: scaleY(0);
+  transition: transform 1.2s var(--ease-out-expo);
+}
+.timeline.line-drawn::before {
+  transform: scaleY(1);
 }
 
 .tl-item {
@@ -835,11 +990,30 @@ img, svg {
   grid-template-columns: 180px 1fr;
   gap: 0 40px;
   padding-block: 32px;
+  padding-left: 20px;
   border-top: 1px solid var(--border);
+  position: relative;
+  transition: opacity 0.15s ease;
 }
+.tl-item:last-child { border-bottom: 1px solid var(--border); }
 
-.tl-item:last-child {
-  border-bottom: 1px solid var(--border);
+/* Timeline dot on the vertical line */
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -4px; top: 38px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 2px var(--accent);
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s ease, transform 0.4s var(--ease-spring);
+}
+.tl-item.dot-visible::before {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .tl-when {
@@ -849,7 +1023,6 @@ img, svg {
   padding-top: 3px;
   line-height: 1.5;
 }
-
 .tl-body h3 {
   font-size: 1rem;
   font-weight: 600;
@@ -857,14 +1030,12 @@ img, svg {
   margin-bottom: 4px;
   letter-spacing: -0.01em;
 }
-
 .tl-org {
   font-size: 0.8rem;
   color: var(--accent);
   font-weight: 500;
   margin-bottom: 10px;
 }
-
 .tl-desc {
   font-size: 0.875rem;
   color: var(--text-secondary);
@@ -878,27 +1049,42 @@ img, svg {
   flex-direction: column;
   gap: 6px;
 }
-
 .exp-footer span {
   font-size: 0.82rem;
   color: var(--text-muted);
+  font-family: var(--font-mono);
 }
-
-.exp-footer strong {
-  color: var(--text-secondary);
-}
+.exp-footer strong { color: var(--text-secondary); }
 
 /* ============================================================
    CONTACT
-   Highest visual weight section. Single CTA intent throughout.
-   NOT a light section tint - dark panel within light theme is
-   intentional one-time device (SKILL §4.11 exception).
    ============================================================ */
 
 .section-contact {
   background: var(--text-primary);
   padding-block: var(--section-py);
+  position: relative;
+  overflow: hidden;
 }
+
+/* Animated mesh gradient background for contact section */
+.contact-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 50%, color-mix(in srgb, var(--accent) 25%, transparent), transparent),
+    radial-gradient(ellipse 60% 80% at 80% 50%, color-mix(in srgb, var(--accent) 15%, transparent), transparent);
+  animation: mesh-drift 8s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-drift {
+  0%   { background-position: 0% 50%, 100% 50%; transform: scale(1); }
+  100% { background-position: 5% 55%, 95% 45%; transform: scale(1.04); }
+}
+
+.section-contact .wrap { position: relative; z-index: 1; }
 
 .contact-headline {
   font-size: clamp(2rem, 4vw + 0.5rem, 3.25rem);
@@ -909,23 +1095,19 @@ img, svg {
   margin-bottom: 16px;
   max-width: 18ch;
 }
-
 .contact-sub {
   font-size: 1rem;
-  color: rgba(240, 240, 237, 0.65);
+  color: rgba(240,240,237,0.65);
   line-height: 1.6;
   max-width: 60ch;
   margin-bottom: 36px;
 }
-
 .contact-links {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
 }
-
-/* Email as large styled text, not just a button */
 .contact-email {
   font-family: var(--font-mono);
   font-size: clamp(0.85rem, 1.5vw, 1rem);
@@ -936,10 +1118,7 @@ img, svg {
   text-underline-offset: 3px;
   transition: text-decoration-color 0.15s ease;
 }
-
-.contact-email:hover {
-  text-decoration-color: var(--accent);
-}
+.contact-email:hover { text-decoration-color: var(--accent); }
 
 /* ============================================================
    FOOTER
@@ -949,7 +1128,6 @@ img, svg {
   padding-block: 24px;
   border-top: 1px solid var(--border);
 }
-
 .footer-inner {
   display: flex;
   align-items: center;
@@ -957,112 +1135,65 @@ img, svg {
   flex-wrap: wrap;
   gap: 8px;
 }
-
 .footer-inner span,
 .footer-inner a {
   font-size: 0.78rem;
   color: var(--text-muted);
   font-family: var(--font-mono);
 }
-
-.footer-inner a:hover {
-  color: var(--text-primary);
-}
+.footer-inner a:hover { color: var(--text-primary); }
 
 /* ============================================================
-   SCROLL REVEAL
-   Elements enter on viewport intersection.
-   Opacity + translateY only - no width/height animation. SKILL §6.A.
+   SCROLL REVEAL - entry animations
    ============================================================ */
 
 .reveal {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.65s var(--ease-out-expo),
+              transform 0.65s var(--ease-out-expo);
 }
-
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Stagger for sibling reveals */
-.reveal:nth-child(2) { transition-delay: 0.06s; }
-.reveal:nth-child(3) { transition-delay: 0.12s; }
-.reveal:nth-child(4) { transition-delay: 0.18s; }
-.reveal:nth-child(5) { transition-delay: 0.24s; }
-.reveal:nth-child(6) { transition-delay: 0.30s; }
+.reveal:nth-child(2) { transition-delay: 0.07s; }
+.reveal:nth-child(3) { transition-delay: 0.14s; }
+.reveal:nth-child(4) { transition-delay: 0.21s; }
+.reveal:nth-child(5) { transition-delay: 0.28s; }
+.reveal:nth-child(6) { transition-delay: 0.35s; }
 
 /* ============================================================
    RESPONSIVE
-   Explicit mobile collapse per section. SKILL §3.E / §7.
    ============================================================ */
 
 @media (max-width: 1024px) {
-  :root {
-    --section-py: 72px;
-  }
-
-  .hero-inner {
-    gap: 48px;
-    padding-block: 60px 100px;
-  }
-
-  .caps-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-  }
+  :root { --section-py: 72px; }
+  .hero-inner { gap: 48px; padding-block: 60px 100px; }
+  .caps-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
 }
 
 @media (max-width: 768px) {
-  :root {
-    --section-py: 60px;
-    --wrap-px: 20px;
-  }
+  :root { --section-py: 60px; --wrap-px: 20px; }
 
-  /* Nav: show toggle, hide desktop links */
-  .nav-links {
-    display: none;
-  }
+  body { cursor: auto; }
+  .cursor-dot, .cursor-ring { display: none; }
 
-  .nav-toggle {
-    display: flex;
-  }
+  .nav-links { display: none; }
+  .nav-toggle { display: flex; }
 
-  /* Hero: stack vertically */
   .hero-inner {
     grid-template-columns: 1fr;
     gap: 40px;
     padding-block: 48px 80px;
   }
+  .hero-headline { font-size: clamp(2rem, 8vw, 2.75rem); }
+  .hero-stats { grid-template-columns: 1fr 1fr; }
 
-  .hero-headline {
-    font-size: clamp(2rem, 8vw, 2.75rem);
-  }
-
-  .hero-stats {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  /* Work: single column */
-  .work-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .card-award {
-    grid-column: 1;
-  }
-
-  .card-wide {
-    grid-column: 1;
-  }
-
-  .card-award-inner {
-    flex-direction: column;
-    gap: 24px;
-  }
-
+  .work-grid { grid-template-columns: 1fr; }
+  .card-award, .card-wide { grid-column: 1; }
+  .card-award-inner { flex-direction: column; gap: 24px; }
   .card-award-badge {
     flex-direction: row;
     align-items: center;
@@ -1071,51 +1202,24 @@ img, svg {
     width: 100%;
   }
 
-  /* Capabilities: two columns */
-  .caps-grid {
-    grid-template-columns: 1fr;
-    gap: 36px;
-  }
+  .caps-grid { grid-template-columns: 1fr; gap: 36px; }
+  .rec-layout { grid-template-columns: 1fr; gap: 40px; }
 
-  /* Recognition: stack */
-  .rec-layout {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  /* Timeline: stack date above content */
+  .timeline::before { left: 0; }
   .tl-item {
     grid-template-columns: 1fr;
     gap: 6px;
     padding-block: 24px;
+    padding-left: 16px;
   }
+  .tl-item::before { top: 28px; }
+  .tl-when { padding-top: 0; }
 
-  .tl-when {
-    padding-top: 0;
-  }
-
-  .footer-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
+  .footer-inner { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
 
 @media (max-width: 480px) {
-  .hero-stats {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .stat-cell {
-    padding: 20px 16px;
-  }
-
-  .stat-n {
-    font-size: 1.75rem;
-  }
-
-  .contact-links {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  .stat-cell { padding: 20px 16px; }
+  .stat-n { font-size: 1.75rem; }
+  .contact-links { flex-direction: column; align-items: flex-start; }
 }
