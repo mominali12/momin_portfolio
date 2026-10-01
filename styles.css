@@ -599,7 +599,79 @@ body.cursor-clicking .cursor-dot {
   padding-block: 80px 120px;
 }
 
-/* Hero content: stagger-in on load */
+/* ── Hero right column: chip scene stacked above stats ─────── */
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 3D Chip scene container */
+.chip-scene-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  /* Entrance: slides in from right */
+  opacity: 0;
+  transform: translateX(24px);
+  animation: chip-enter 0.9s var(--ease-out-expo) 0.35s forwards;
+}
+
+@keyframes chip-enter {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+#chip-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Chip identity label: bottom-left overlay */
+.chip-label {
+  position: absolute;
+  bottom: 14px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  pointer-events: none;
+}
+.chip-label-name {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+.chip-label-sub {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+/* Stats now compact 2x2 beneath the chip */
+.hero-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: stats-enter 0.8s var(--ease-out-expo) 0.5s forwards;
+}
+
+@keyframes stats-enter {
+  to { opacity: 1; transform: translateY(0); }
+}
 .hero-content > * {
   opacity: 0;
   transform: translateY(16px);
@@ -613,17 +685,6 @@ body.cursor-clicking .cursor-dot {
 
 @keyframes hero-enter {
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* Hero stats: fade in from right */
-.hero-stats {
-  opacity: 0;
-  transform: translateX(20px);
-  animation: stats-enter 0.8s var(--ease-out-expo) 0.3s forwards;
-}
-
-@keyframes stats-enter {
-  to { opacity: 1; transform: translateX(0); }
 }
 
 .award-pill {
@@ -689,16 +750,7 @@ body.cursor-clicking .cursor-dot {
   font-family: var(--font-mono);
 }
 
-/* Stats 2x2 grid */
-.hero-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
+/* Stats 2x2 grid — defined in chip scene block */
 
 .stat-cell {
   background: var(--surface);
@@ -1251,7 +1303,75 @@ body.cursor-clicking .cursor-dot {
   gap: 12px;
   align-items: center;
 }
+
+/* ============================================================
+   ICON SYSTEM
+   All icons: 16x16 viewBox, stroke="currentColor", stroke-width 1.5.
+   aria-hidden="true" on every icon — text or aria-label carries meaning.
+   One visual weight throughout. No mixing filled + stroked.
+   ============================================================ */
+
+/* Stat cell icons: sit above the number, muted color */
+.stat-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-bottom: 2px;
+  /* Transitions with the cell color change on dark mode swap */
+  transition: color var(--theme-duration) ease;
+}
+.stat-cell:hover .stat-icon {
+  color: var(--accent);
+}
+
+/* Timeline meta row: role icon + location chip, above the role title */
+.tl-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+/* Role-type icon: small square, accent-tinted background */
+.tl-role-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-subtle);
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: background-color var(--theme-duration) ease;
+}
+.tl-role-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Location chip: pin icon + text, muted, compact */
+.tl-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  transition: color var(--theme-duration) ease;
+}
+.tl-location svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+/* Contact email: icon + address on one line */
 .contact-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
   font-size: clamp(0.85rem, 1.5vw, 1rem);
   font-weight: 500;
@@ -1261,7 +1381,65 @@ body.cursor-clicking .cursor-dot {
   text-underline-offset: 3px;
   transition: text-decoration-color 0.15s ease;
 }
-.contact-email:hover { text-decoration-color: var(--accent); }
+.contact-email svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--accent-hover);
+}
+.contact-email:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* btn-ghost-inv SVG: LinkedIn logomark sits left of text */
+.btn-ghost-inv svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  /* LinkedIn icon uses fill not stroke — no stroke override needed */
+}
+.btn-ghost-inv {
+  gap: 7px; /* space between icon and text */
+}
+
+/* Hero CTA ghost button icon */
+.btn-ghost svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.btn-ghost {
+  gap: 7px;
+}
+
+/* Back to top: icon + text, footer row */
+.back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  transition: color 0.15s ease, transform 0.2s var(--ease-spring);
+}
+.back-to-top svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  transition: transform 0.2s var(--ease-spring);
+}
+.back-to-top:hover {
+  color: var(--text-primary);
+}
+.back-to-top:hover svg {
+  transform: translateY(-2px);
+}
+
+/* Certifications shield icon: inline in the label paragraph */
+.rec-venues-label svg {
+  color: var(--accent);
+  transition: color var(--theme-duration) ease;
+}
 
 /* ============================================================
    FOOTER
@@ -1278,13 +1456,11 @@ body.cursor-clicking .cursor-dot {
   flex-wrap: wrap;
   gap: 8px;
 }
-.footer-inner span,
-.footer-inner a {
+.footer-inner span {
   font-size: 0.78rem;
   color: var(--text-muted);
   font-family: var(--font-mono);
 }
-.footer-inner a:hover { color: var(--text-primary); }
 
 /* ============================================================
    SCROLL REVEAL - entry animations
@@ -1332,6 +1508,10 @@ body.cursor-clicking .cursor-dot {
     padding-block: 48px 80px;
   }
   .hero-headline { font-size: clamp(2rem, 8vw, 2.75rem); }
+
+  /* Hide 3D chip on mobile — stat grid shows standalone */
+  .chip-scene-wrap { display: none; }
+  .hero-right { gap: 0; }
   .hero-stats { grid-template-columns: 1fr 1fr; }
 
   .work-grid { grid-template-columns: 1fr; }
