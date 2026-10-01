@@ -599,79 +599,7 @@ body.cursor-clicking .cursor-dot {
   padding-block: 80px 120px;
 }
 
-/* ── Hero right column: chip scene stacked above stats ─────── */
-.hero-right {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* 3D Chip scene container */
-.chip-scene-wrap {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  /* Entrance: slides in from right */
-  opacity: 0;
-  transform: translateX(24px);
-  animation: chip-enter 0.9s var(--ease-out-expo) 0.35s forwards;
-}
-
-@keyframes chip-enter {
-  to { opacity: 1; transform: translateX(0); }
-}
-
-#chip-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* Chip identity label: bottom-left overlay */
-.chip-label {
-  position: absolute;
-  bottom: 14px;
-  left: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  pointer-events: none;
-}
-.chip-label-name {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--accent);
-  letter-spacing: 0.04em;
-}
-.chip-label-sub {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  letter-spacing: 0.02em;
-}
-
-/* Stats now compact 2x2 beneath the chip */
-.hero-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(16px);
-  animation: stats-enter 0.8s var(--ease-out-expo) 0.5s forwards;
-}
-
-@keyframes stats-enter {
-  to { opacity: 1; transform: translateY(0); }
-}
+/* hero-stats defined below */
 .hero-content > * {
   opacity: 0;
   transform: translateY(16px);
@@ -750,7 +678,24 @@ body.cursor-clicking .cursor-dot {
   font-family: var(--font-mono);
 }
 
-/* Stats 2x2 grid — defined in chip scene block */
+/* Stats 2x2 grid */
+.hero-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  /* Entrance from right */
+  opacity: 0;
+  transform: translateX(20px);
+  animation: stats-enter 0.8s var(--ease-out-expo) 0.3s forwards;
+}
+
+@keyframes stats-enter {
+  to { opacity: 1; transform: translateX(0); }
+}
 
 .stat-cell {
   background: var(--surface);
@@ -1483,6 +1428,28 @@ body.cursor-clicking .cursor-dot {
 .reveal:nth-child(5) { transition-delay: 0.28s; }
 .reveal:nth-child(6) { transition-delay: 0.35s; }
 
+
+/* ============================================================
+   ROBOT COMPANION CANVAS
+   Fixed overlay, right edge, full viewport height.
+   pointer-events:none so it never blocks clicks.
+   Hidden on mobile via media query.
+   ============================================================ */
+
+#robot-canvas {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 110px;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 40;
+}
+
+@media (max-width: 768px) {
+  #robot-canvas { display: none; }
+}
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */
@@ -1509,9 +1476,6 @@ body.cursor-clicking .cursor-dot {
   }
   .hero-headline { font-size: clamp(2rem, 8vw, 2.75rem); }
 
-  /* Hide 3D chip on mobile — stat grid shows standalone */
-  .chip-scene-wrap { display: none; }
-  .hero-right { gap: 0; }
   .hero-stats { grid-template-columns: 1fr 1fr; }
 
   .work-grid { grid-template-columns: 1fr; }
