@@ -302,510 +302,459 @@
   /* ─────────────────────────────────────────────
      8. ROBOT COMPANION  (Three.js r128 vanilla)
      ─────────────────────────────────────────────
-     What it does:
-       - Cute cartoon robot rendered in a fixed canvas on the right edge
-       - Idle: body breathes, antenna bobs, visor glows with accent color
-       - On scroll: watches each section heading with IntersectionObserver;
-         when a heading exits the top of the screen the robot jumps to the
-         Y position of the NEXT heading
-       - Jump: parabolic arc (real projectile physics feel), squash on land,
-         stretch on rise, wave arm animation after landing
-       - Reduced motion: robot teleports, no squash/stretch
+     Architecture: ONE small canvas (72×88px) in #robot-wrap.
+     The wrap is positioned via JS to sit just left of each active
+     section heading. overflow:hidden on the wrap + CSS translateX
+     transition creates the "peek from behind heading" effect:
+       hidden: wrap.translateX(-80px) — robot offscreen left
+       visible: wrap.translateX(0)    — robot peeks out, clipped by overflow:hidden
 
-     SKILL.md:
-       - Three.js vanilla (plain HTML, max control)
-       - Procedural geometry, zero external assets
-       - ~2,400 triangles total (sphere, boxes, cylinders, torus)
+     Section tracking: IntersectionObserver on each heading ID.
+     When a heading enters the viewport, robot slides in next to it.
+     When it leaves, robot slides back and repositions to the next.
+
+     Robot design: compact (0.45 scale), cartoonish, big head, small body.
+     Idle: gentle head bob + antenna wobble + visor pulse.
+     On peek: happy bounce (scaleY overshoot then settle).
+     No jump arc — the CSS spring transition IS the movement. Clean.
+
+     Reduced motion: wrap appears instantly (transition:none override),
+     no idle animation, no bounce.
+
+     SKILL.md compliance:
+       - Three.js vanilla, procedural geometry, zero external assets
+       - ~1,200 triangles (simplified geometry vs previous version)
        - DPR capped at Math.min(devicePixelRatio, 2)
-       - Mobile: early return + CSS display:none
-       - WebGL fallback: hides canvas gracefully
-       - Lights: 1 ambient + 1 directional (SKILL quick win)
+       - Hidden on tablet/mobile (max-width: 1024px)
+       - WebGL fallback: display:none on wrap
+       - Lights: 1 ambient + 1 directional
   ───────────────────────────────────────────── */
   (function initRobot() {
-    if (window.innerWidth <= 768) return;
+    // Hidden at tablet and below (CSS also hides it, JS exits early to save GPU)
+    if (window.innerWidth <= 1024) return;
 
+    const wrap   = document.getElementById('robot-wrap');
     const canvas = document.getElementById('robot-canvas');
-    if (!canvas) return;
+    if (!wrap || !canvas) return;
 
-    // WebGL fallback
+    // WebGL fallback — hide wrap entirely
     const testCtx = canvas.getContext('webgl2') || canvas.getContext('webgl');
-    if (!testCtx) { canvas.style.display = 'none'; return; }
+    if (!testCtx) { wrap.style.display = 'none'; return; }
 
     const THREE = window.THREE;
     if (!THREE) return;
 
-    // Canvas is fixed 110px wide, full viewport height
-    const CW = 110;
-    const CH = window.innerHeight;
-
+    // ── Renderer: 72×88px, transparent bg ────────────────────
+    const CW = 72, CH = 88;
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(CW, CH);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
 
-    const scene  = new THREE.Scene();
-    // Orthographic camera: flat, cartoon look, no perspective distortion
-    const aspect = CW / CH;
-    const viewH  = 10; // 10 world units tall
-    const viewW  = viewH * aspect;
+    // ── Scene + orthographic camera (flat cartoon look) ───────
+    const scene = new THREE.Scene();
+    // viewH controls how much of world space fits in the canvas height
+    // Smaller viewH = robot appears larger relative to canvas
+    const viewH = 5.5;
+    const viewW = viewH * (CW / CH);
     const camera = new THREE.OrthographicCamera(
-      -viewW/2, viewW/2, viewH/2, -viewH/2, 0.1, 100
+      -viewW/2, viewW/2, viewH/2, -viewH/2, 0.1, 50
     );
     camera.position.z = 10;
 
-    // ── Accent color helpers ─────────────────────────────────
+    // ── Color helpers ─────────────────────────────────────────
     function getAccentHex() {
-      const v = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent').trim();
+      const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
       return v.startsWith('#') ? v : '#2C6EAB';
     }
-    function getBgHex() {
-      const v = getComputedStyle(document.documentElement)
-        .getPropertyValue('--surface').trim();
-      return v.startsWith('#') ? v : '#FFFFFF';
-    }
 
-    // ── Materials ────────────────────────────────────────────
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2a2e3d, roughness: 0.4, metalness: 0.3 });
-    const bodyAccentMat = new THREE.MeshStandardMaterial({ color: 0x3d4258, roughness: 0.5, metalness: 0.2 });
-    const rimMat  = new THREE.MeshStandardMaterial({ color: 0x5a6080, roughness: 0.3, metalness: 0.6 });
+    // ── Materials ─────────────────────────────────────────────
+    // Body: dark blue-grey, slightly shiny
+    const matBody   = new THREE.MeshStandardMaterial({ color: 0x2a2e3d, roughness: 0.45, metalness: 0.35 });
+    const matRim    = new THREE.MeshStandardMaterial({ color: 0x4a5060, roughness: 0.3,  metalness: 0.7  });
+    const matVisorBg= new THREE.MeshStandardMaterial({ color: 0x080c14, roughness: 0.9                   });
+    const matEye    = new THREE.MeshStandardMaterial({ color: 0xd8eeff, roughness: 0.2                   });
+    const matBlush  = new THREE.MeshStandardMaterial({ color: 0xf07070, roughness: 1.0, transparent: true, opacity: 0.4 });
 
-    // Visor and accent pieces: use accent color, emissive glow
-    const accentMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(getAccentHex()),
+    // Accent: visor frame, antenna tip, chest stripe — theme-reactive
+    const matAccent = new THREE.MeshStandardMaterial({
+      color:   new THREE.Color(getAccentHex()),
       emissive: new THREE.Color(getAccentHex()),
-      emissiveIntensity: 0.6,
-      roughness: 0.1, metalness: 0.5,
+      emissiveIntensity: 0.55,
+      roughness: 0.1, metalness: 0.4,
     });
-
-    // Eye whites
-    const eyeMat  = new THREE.MeshStandardMaterial({ color: 0xd0e8f8, roughness: 0.3, metalness: 0.1 });
-    // Eye pupils
-    const pupilMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(getAccentHex()),
+    const matPupil  = new THREE.MeshStandardMaterial({
+      color:   new THREE.Color(getAccentHex()),
       emissive: new THREE.Color(getAccentHex()),
-      emissiveIntensity: 1.0, roughness: 0.0, metalness: 0.0,
-    });
-    // Cheek blush
-    const blushMat = new THREE.MeshStandardMaterial({
-      color: 0xf08080, roughness: 1.0, metalness: 0.0,
-      transparent: true, opacity: 0.35,
+      emissiveIntensity: 1.0, roughness: 0.0,
     });
 
-    // ── Robot group ──────────────────────────────────────────
+    // ── Robot group — scale down to fit snugly in 72×88 canvas ─
     const robot = new THREE.Group();
     scene.add(robot);
+    robot.scale.setScalar(0.82); // calibrated so full robot fills ~80% of canvas height
 
-    // Body: rounded box — main torso
-    const bodyGeo  = new THREE.BoxGeometry(1.4, 1.6, 0.7, 1,1,1);
-    const body     = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 0;
+    // All geometry built at "1 unit = roughly 1 unit of visual space"
+    // then scaled by robot group. This keeps geometry readable.
+
+    // ── BODY (torso) ──────────────────────────────────────────
+    const body = new THREE.Mesh(
+      new THREE.BoxGeometry(0.9, 0.95, 0.55),
+      matBody
+    );
     robot.add(body);
 
-    // Body panel stripe (accent)
-    const stripeGeo = new THREE.BoxGeometry(0.9, 0.25, 0.72);
-    const stripe    = new THREE.Mesh(stripeGeo, accentMat);
-    stripe.position.set(0, 0.3, 0);
+    // Chest accent stripe
+    const stripe = new THREE.Mesh(
+      new THREE.BoxGeometry(0.58, 0.15, 0.57),
+      matAccent
+    );
+    stripe.position.set(0, 0.2, 0);
     robot.add(stripe);
 
-    // Chest button 1
-    const btn1Geo = new THREE.CylinderGeometry(0.08, 0.08, 0.1, 8);
-    const btn1    = new THREE.Mesh(btn1Geo, accentMat);
+    // Two chest buttons
+    const btnGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.06, 8);
+    const btn1 = new THREE.Mesh(btnGeo, matAccent);
     btn1.rotation.x = Math.PI / 2;
-    btn1.position.set(-0.25, -0.1, 0.36);
+    btn1.position.set(-0.15, -0.05, 0.28);
     robot.add(btn1);
-    // Chest button 2
     const btn2 = btn1.clone();
-    btn2.position.set(0.05, -0.1, 0.36);
+    btn2.position.set( 0.1, -0.05, 0.28);
     robot.add(btn2);
-    // Chest button 3
-    const btn3 = btn1.clone();
-    btn3.position.set(0.35, -0.1, 0.36);
-    robot.add(btn3);
 
-    // Waist ring
-    const waistGeo = new THREE.TorusGeometry(0.72, 0.06, 8, 20);
-    const waist    = new THREE.Mesh(waistGeo, rimMat);
-    waist.position.y = -0.78;
-    robot.add(waist);
+    // ── WAIST + HIPS ──────────────────────────────────────────
+    const hipMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(0.72, 0.22, 0.48),
+      new THREE.MeshStandardMaterial({ color: 0x3a3e50, roughness: 0.5, metalness: 0.2 })
+    );
+    hipMesh.position.y = -0.6;
+    robot.add(hipMesh);
 
-    // Hips
-    const hipGeo = new THREE.BoxGeometry(1.1, 0.3, 0.6);
-    const hips   = new THREE.Mesh(hipGeo, bodyAccentMat);
-    hips.position.y = -1.0;
-    robot.add(hips);
-
-    // Legs (two)
-    const legGeo = new THREE.CylinderGeometry(0.22, 0.18, 0.7, 8);
-    const legL   = new THREE.Mesh(legGeo, bodyMat);
-    legL.position.set(-0.32, -1.55, 0);
+    // ── LEGS ──────────────────────────────────────────────────
+    const legGeo = new THREE.CylinderGeometry(0.14, 0.11, 0.42, 8);
+    const legL   = new THREE.Mesh(legGeo, matBody);
+    legL.position.set(-0.2, -0.95, 0);
     robot.add(legL);
-    const legR   = legL.clone();
-    legR.position.set( 0.32, -1.55, 0);
+    const legR = legL.clone();
+    legR.position.set( 0.2, -0.95, 0);
     robot.add(legR);
 
     // Feet
-    const footGeo = new THREE.BoxGeometry(0.42, 0.2, 0.55);
-    const footL   = new THREE.Mesh(footGeo, rimMat);
-    footL.position.set(-0.32, -2.0, 0.05);
+    const footGeo = new THREE.BoxGeometry(0.26, 0.13, 0.35);
+    const footL = new THREE.Mesh(footGeo, matRim);
+    footL.position.set(-0.2, -1.22, 0.04);
     robot.add(footL);
-    const footR   = footL.clone();
-    footR.position.set( 0.32, -2.0, 0.05);
+    const footR = footL.clone();
+    footR.position.set( 0.2, -1.22, 0.04);
     robot.add(footR);
 
-    // HEAD ─────────────────────────────────────────────────────
-    const head = new THREE.Group();
-    robot.add(head);
-    head.position.y = 1.35;
+    // ── ARMS ──────────────────────────────────────────────────
+    // Arms as groups so we can rotate from shoulder
+    const armGroupL = new THREE.Group();
+    armGroupL.position.set(-0.6, 0.25, 0);
+    robot.add(armGroupL);
 
-    const headGeo  = new THREE.BoxGeometry(1.3, 1.1, 1.0, 1,1,1);
-    const headMesh = new THREE.Mesh(headGeo, bodyMat);
-    head.add(headMesh);
+    const upperL = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.085, 0.07, 0.38, 8),
+      matBody
+    );
+    upperL.rotation.z = 0.25; // slight outward angle
+    upperL.position.set(-0.06, -0.19, 0);
+    armGroupL.add(upperL);
 
-    // Visor: large rounded rectangle on front of head
-    const visorGeo  = new THREE.BoxGeometry(1.0, 0.55, 0.05);
-    const visor     = new THREE.Mesh(visorGeo, accentMat);
-    visor.position.set(0, 0.05, 0.53);
-    head.add(visor);
+    const handL = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), matRim);
+    handL.position.set(-0.1, -0.4, 0);
+    armGroupL.add(handL);
 
-    // Visor inner dark face
-    const visorInGeo = new THREE.BoxGeometry(0.88, 0.44, 0.03);
-    const visorInMat = new THREE.MeshStandardMaterial({ color: 0x0a0e18, roughness: 0.8 });
-    const visorIn    = new THREE.Mesh(visorInGeo, visorInMat);
-    visorIn.position.set(0, 0.05, 0.56);
-    head.add(visorIn);
+    const armGroupR = new THREE.Group();
+    armGroupR.position.set( 0.6, 0.25, 0);
+    robot.add(armGroupR);
 
-    // Eyes (on visor)
-    const eyeGeo  = new THREE.CircleGeometry(0.1, 12);
-    const eyeL    = new THREE.Mesh(eyeGeo, eyeMat);
-    eyeL.position.set(-0.22, 0.06, 0.575);
-    head.add(eyeL);
-    const eyeR    = eyeL.clone();
-    eyeR.position.set( 0.22, 0.06, 0.575);
-    head.add(eyeR);
-
-    // Pupils
-    const pupilGeo  = new THREE.CircleGeometry(0.055, 10);
-    const pupilL    = new THREE.Mesh(pupilGeo, pupilMat);
-    pupilL.position.set(-0.22, 0.06, 0.578);
-    head.add(pupilL);
-    const pupilR    = pupilL.clone();
-    pupilR.position.set( 0.22, 0.06, 0.578);
-    head.add(pupilR);
-
-    // Cheeks
-    const cheekGeo = new THREE.CircleGeometry(0.1, 10);
-    const cheekL   = new THREE.Mesh(cheekGeo, blushMat);
-    cheekL.position.set(-0.38, -0.1, 0.575);
-    head.add(cheekL);
-    const cheekR   = cheekL.clone();
-    cheekR.position.set( 0.38, -0.1, 0.575);
-    head.add(cheekR);
-
-    // Smile — thin arc using a torus segment
-    const smileGeo = new THREE.TorusGeometry(0.13, 0.025, 6, 12, Math.PI);
-    const smileMat = new THREE.MeshStandardMaterial({ color: 0xd0e8f8, roughness: 0.5 });
-    const smile    = new THREE.Mesh(smileGeo, smileMat);
-    smile.rotation.z = Math.PI; // arc curves up
-    smile.position.set(0, -0.15, 0.578);
-    head.add(smile);
-
-    // Ear panels
-    const earGeo = new THREE.BoxGeometry(0.12, 0.45, 0.15);
-    const earL   = new THREE.Mesh(earGeo, bodyAccentMat);
-    earL.position.set(-0.71, 0.05, 0);
-    head.add(earL);
-    const earR   = earL.clone();
-    earR.position.set( 0.71, 0.05, 0);
-    head.add(earR);
-
-    // Ear detail accent ring
-    const earRingGeo = new THREE.TorusGeometry(0.1, 0.025, 6, 12);
-    const earRingL   = new THREE.Mesh(earRingGeo, accentMat);
-    earRingL.position.set(-0.72, 0.05, 0);
-    earRingL.rotation.y = Math.PI / 2;
-    head.add(earRingL);
-    const earRingR   = earRingL.clone();
-    earRingR.position.set( 0.72, 0.05, 0);
-    head.add(earRingR);
-
-    // ANTENNA ──────────────────────────────────────────────────
-    const antenna = new THREE.Group();
-    head.add(antenna);
-    antenna.position.set(0, 0.55, 0);
-
-    const stickGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.55, 8);
-    const stick    = new THREE.Mesh(stickGeo, rimMat);
-    stick.position.y = 0.275;
-    antenna.add(stick);
-
-    const tipGeo   = new THREE.SphereGeometry(0.1, 10, 8);
-    const tip      = new THREE.Mesh(tipGeo, accentMat);
-    tip.position.y = 0.6;
-    antenna.add(tip);
-
-    // ARMS ─────────────────────────────────────────────────────
-    const armGroup = new THREE.Group(); // parent for wave animation
-    robot.add(armGroup);
-
-    const upperArmGeo = new THREE.CylinderGeometry(0.13, 0.11, 0.6, 8);
-    const armL         = new THREE.Group();
-    armGroup.add(armL);
-    armL.position.set(-0.9, 0.5, 0);
-
-    const upperArmL = new THREE.Mesh(upperArmGeo, bodyMat);
-    upperArmL.rotation.z = 0.3; // arms angled slightly down
-    armL.add(upperArmL);
-
-    const handGeo = new THREE.SphereGeometry(0.16, 8, 8);
-    const handL   = new THREE.Mesh(handGeo, rimMat);
-    handL.position.set(-0.2, -0.35, 0);
-    armL.add(handL);
-
-    const armR = new THREE.Group();
-    armGroup.add(armR);
-    armR.position.set( 0.9, 0.5, 0);
-
-    const upperArmR = new THREE.Mesh(upperArmGeo, bodyMat);
-    upperArmR.rotation.z = -0.3;
-    armR.add(upperArmR);
+    const upperR = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.085, 0.07, 0.38, 8),
+      matBody
+    );
+    upperR.rotation.z = -0.25;
+    upperR.position.set( 0.06, -0.19, 0);
+    armGroupR.add(upperR);
 
     const handR = handL.clone();
-    handR.position.set( 0.2, -0.35, 0);
-    armR.add(handR);
+    handR.position.set( 0.1, -0.4, 0);
+    armGroupR.add(handR);
+
+    // ── HEAD ──────────────────────────────────────────────────
+    // Head is big relative to body — cartoon proportion
+    const headGroup = new THREE.Group();
+    headGroup.position.y = 0.85;
+    robot.add(headGroup);
+
+    const headMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(1.05, 0.9, 0.78),
+      matBody
+    );
+    headGroup.add(headMesh);
+
+    // Ear nubs
+    const earGeo = new THREE.BoxGeometry(0.09, 0.32, 0.12);
+    const earL = new THREE.Mesh(earGeo, new THREE.MeshStandardMaterial({ color: 0x3d4258, roughness: 0.5, metalness: 0.2 }));
+    earL.position.set(-0.57, 0, 0);
+    headGroup.add(earL);
+    const earR = earL.clone();
+    earR.position.set( 0.57, 0, 0);
+    headGroup.add(earR);
+
+    // Ear accent rings
+    const earRingGeo = new THREE.TorusGeometry(0.065, 0.018, 6, 12);
+    const earRingL = new THREE.Mesh(earRingGeo, matAccent);
+    earRingL.position.set(-0.58, 0, 0);
+    earRingL.rotation.y = Math.PI / 2;
+    headGroup.add(earRingL);
+    const earRingR = earRingL.clone();
+    earRingR.position.set( 0.58, 0, 0);
+    headGroup.add(earRingR);
+
+    // Visor frame (accent color)
+    const visorFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(0.82, 0.48, 0.04),
+      matAccent
+    );
+    visorFrame.position.set(0, 0.04, 0.41);
+    headGroup.add(visorFrame);
+
+    // Visor screen (dark inner)
+    const visorScreen = new THREE.Mesh(
+      new THREE.BoxGeometry(0.72, 0.38, 0.03),
+      matVisorBg
+    );
+    visorScreen.position.set(0, 0.04, 0.435);
+    headGroup.add(visorScreen);
+
+    // Eyes (on visor screen)
+    const eyeGeo = new THREE.CircleGeometry(0.075, 12);
+    const eyeL = new THREE.Mesh(eyeGeo, matEye);
+    eyeL.position.set(-0.17, 0.07, 0.445);
+    headGroup.add(eyeL);
+    const eyeR = eyeL.clone();
+    eyeR.position.set( 0.17, 0.07, 0.445);
+    headGroup.add(eyeR);
+
+    // Pupils
+    const pupilGeo = new THREE.CircleGeometry(0.04, 10);
+    const pupilL = new THREE.Mesh(pupilGeo, matPupil);
+    pupilL.position.set(-0.17, 0.07, 0.448);
+    headGroup.add(pupilL);
+    const pupilR = pupilL.clone();
+    pupilR.position.set( 0.17, 0.07, 0.448);
+    headGroup.add(pupilR);
+
+    // Blush circles (cute cheeks)
+    const blushGeo = new THREE.CircleGeometry(0.07, 10);
+    const blushL = new THREE.Mesh(blushGeo, matBlush);
+    blushL.position.set(-0.3, -0.1, 0.449);
+    headGroup.add(blushL);
+    const blushR = blushL.clone();
+    blushR.position.set( 0.3, -0.1, 0.449);
+    headGroup.add(blushR);
+
+    // Smile (torus segment)
+    const smileGeo = new THREE.TorusGeometry(0.1, 0.018, 6, 12, Math.PI);
+    const smileMat = new THREE.MeshStandardMaterial({ color: 0xd0e8f8, roughness: 0.5 });
+    const smileMesh = new THREE.Mesh(smileGeo, smileMat);
+    smileMesh.rotation.z = Math.PI;
+    smileMesh.position.set(0, -0.1, 0.45);
+    headGroup.add(smileMesh);
+
+    // ── ANTENNA ───────────────────────────────────────────────
+    const antennaGroup = new THREE.Group();
+    antennaGroup.position.set(0.1, 0.46, 0);
+    headGroup.add(antennaGroup);
+
+    const stickMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.025, 0.025, 0.38, 8),
+      matRim
+    );
+    stickMesh.position.y = 0.19;
+    antennaGroup.add(stickMesh);
+
+    const tipMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.07, 10, 8),
+      matAccent
+    );
+    tipMesh.position.y = 0.42;
+    antennaGroup.add(tipMesh);
 
     // ── Lights ────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const dir = new THREE.DirectionalLight(0xffffff, 1.0);
-    dir.position.set(2, 4, 6);
-    scene.add(dir);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight.position.set(1.5, 3, 4);
+    scene.add(dirLight);
 
-    // ── Position in world space ───────────────────────────────
-    // Robot sits in center of the 110px wide canvas
-    // viewW ≈ 1.83 world units (10 * 110/viewport_height)
-    // We keep X at 0 (center of canvas)
-    robot.position.x = 0;
-    robot.position.y = 2; // start near top
+    // ── Position robot centered in canvas, slightly up ────────
+    // Robot total height ≈ 2.45 world units × 0.82 scale ≈ 2.0 units
+    // viewH = 5.5, so robot fills ~36% of height — visible but not crammed
+    robot.position.set(0, 0.2, 0); // centered, slightly above midpoint
 
-    // ── Map screen Y → world Y ────────────────────────────────
-    function screenYtoWorldY(screenY) {
-      // screenY: pixels from top of viewport
-      // canvas fills full viewport height
-      const normalized = 1 - (screenY / CH) * 2; // +1 at top, -1 at bottom
-      return normalized * (viewH / 2);
+    // Slight initial angle — facing left (toward content)
+    robot.rotation.y = 0.25;
+
+    // ── Section heading targets ───────────────────────────────
+    const headingIds = [
+      'heading-hero', 'heading-work', 'heading-capabilities',
+      'heading-recognition', 'heading-experience', 'heading-contact'
+    ];
+
+    function positionWrapAtHeading(el) {
+      // Place wrap so robot sits just left of the heading's left edge
+      const rect    = el.getBoundingClientRect();
+      const wrapTop = rect.top + window.scrollY;
+      // top: align wrap center with heading's vertical center
+      const newTop  = wrapTop + (rect.height / 2) - (CH / 2);
+      // left: just left of content — robot peeks from left margin
+      const newLeft = Math.max(rect.left - CW - 8, 4);
+
+      // Snap top instantly (no slide), then slide in with CSS
+      wrap.style.top      = newTop  + 'px';
+      wrap.style.left     = newLeft + 'px';
     }
 
-    // ── Section headings the robot jumps between ──────────────
-    // Collect all h2 section titles + the hero h1
-    const jumpTargets = [];
+    let currentHeadingEl = null;
+    let pendingVisible    = false;
 
-    function collectTargets() {
-      jumpTargets.length = 0;
-      const h1 = document.querySelector('.hero-headline');
-      if (h1) jumpTargets.push(h1);
-      document.querySelectorAll('.section-title').forEach(h => jumpTargets.push(h));
-      const contact = document.querySelector('.contact-headline');
-      if (contact) jumpTargets.push(contact);
-    }
-    collectTargets();
-
-    let currentTargetIndex = 0;
-
-    function getTargetWorldY(el) {
-      const rect = el.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      return screenYtoWorldY(midY);
-    }
-
-    // Initial position
-    if (jumpTargets.length > 0) {
-      robot.position.y = getTargetWorldY(jumpTargets[0]);
+    function showAtHeading(el) {
+      // If already showing somewhere else, hide first then reposition
+      if (currentHeadingEl && currentHeadingEl !== el && wrap.classList.contains('robot-visible')) {
+        hideRobot(() => {
+          positionWrapAtHeading(el);
+          // Small delay so the instant reposition finishes before slide-in
+          requestAnimationFrame(() => {
+            wrap.classList.add('robot-visible');
+            currentHeadingEl = el;
+            triggerPeekBounce();
+          });
+        });
+      } else {
+        positionWrapAtHeading(el);
+        wrap.classList.add('robot-visible');
+        currentHeadingEl = el;
+        triggerPeekBounce();
+      }
     }
 
-    // ── Jump state ────────────────────────────────────────────
-    let jumping       = false;
-    let jumpFrom      = robot.position.y;
-    let jumpTo        = robot.position.y;
-    let jumpT         = 0;     // 0→1 progress
-    const JUMP_DUR    = 0.55;  // seconds
-    let   jumpElapsed = 0;
-    let   lastTime    = performance.now();
-
-    // Squash/stretch scale applied to body during jump
-    let scaleY = 1.0, scaleX = 1.0;
-
-    function startJump(targetIndex) {
-      if (targetIndex < 0 || targetIndex >= jumpTargets.length) return;
-      if (jumping) return; // mid-air: queue is ignored (simplicity over complexity)
-      const targetEl = jumpTargets[targetIndex];
-      jumpFrom  = robot.position.y;
-      jumpTo    = getTargetWorldY(targetEl);
-      jumpT     = 0;
-      jumpElapsed = 0;
-      jumping   = true;
-      currentTargetIndex = targetIndex;
-      // Trigger wave arm animation
-      waveProgress = 0;
-      waving = false; // will activate on land
+    function hideRobot(cb) {
+      wrap.classList.remove('robot-visible');
+      // Wait for transition (550ms) then callback
+      setTimeout(() => { if (cb) cb(); }, 560);
     }
 
-    // ── Arm wave state ────────────────────────────────────────
-    let waving       = false;
-    let waveProgress = 0;
-    const WAVE_DUR   = 1.2; // seconds
+    // ── Peek bounce: robot does a happy squash-and-stretch
+    //    on arrival — pure Three.js scale animation, not CSS ──
+    let peekPhase = 0;  // 0 = idle, 1 = bouncing in
+    let peekT     = 0;
 
-    // ── Idle animation state ──────────────────────────────────
-    let idleT = 0;
-
-    // ── Easing functions ──────────────────────────────────────
-    function easeInOutCubic(t) { return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
-    function easeOutBounce(t) {
-      const n=7.5625, d=2.75;
-      if (t<1/d) return n*t*t;
-      if (t<2/d) return n*(t-=1.5/d)*t+0.75;
-      if (t<2.5/d) return n*(t-=2.25/d)*t+0.9375;
-      return n*(t-=2.625/d)*t+0.984375;
+    function triggerPeekBounce() {
+      if (reducedMotion) return;
+      peekPhase = 1;
+      peekT     = 0;
     }
 
-    // ── IntersectionObserver: watch each heading ──────────────
-    // When a heading exits the TOP of the screen (rootMargin pushes threshold up),
-    // robot jumps to the NEXT heading.
+    // ── IntersectionObserver: one per heading ─────────────────
+    // rootMargin: fires when heading enters the middle band of the viewport
     const headingObs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (!entry.isIntersecting) {
-          // Heading scrolled off the top — find which one and jump to next
-          const idx = jumpTargets.indexOf(entry.target);
-          if (idx !== -1 && idx + 1 < jumpTargets.length) {
-            startJump(idx + 1);
+        const el = entry.target;
+        if (entry.isIntersecting) {
+          showAtHeading(el);
+        } else {
+          // If this was the current heading, slide robot away
+          if (currentHeadingEl === el) {
+            hideRobot(null);
+            currentHeadingEl = null;
           }
         }
       });
     }, {
-      // rootMargin: negative top means "fire when element is within 20% of top"
-      rootMargin: '-10% 0px -80% 0px',
-      threshold: 0,
+      // Fire when heading is between 15% from top and 60% from bottom of viewport
+      rootMargin: '-15% 0px -35% 0px',
+      threshold:  0,
     });
 
-    jumpTargets.forEach(el => headingObs.observe(el));
+    headingIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) headingObs.observe(el);
+    });
 
     // ── Theme change: update accent materials ─────────────────
     document.addEventListener('themechange', () => {
       setTimeout(() => {
         const c = new THREE.Color(getAccentHex());
-        accentMat.color.set(c); accentMat.emissive.set(c); accentMat.needsUpdate = true;
-        pupilMat.color.set(c); pupilMat.emissive.set(c); pupilMat.needsUpdate = true;
+        matAccent.color.set(c);   matAccent.emissive.set(c);  matAccent.needsUpdate = true;
+        matPupil.color.set(c);    matPupil.emissive.set(c);   matPupil.needsUpdate  = true;
       }, 50);
     });
 
     // ── Render loop ───────────────────────────────────────────
+    let idleT   = 0;
+    let lastNow = performance.now();
     let rafId;
+
     function render(now) {
       rafId = requestAnimationFrame(render);
-      const dt = Math.min((now - lastTime) / 1000, 0.05); // cap dt at 50ms
-      lastTime = now;
-      idleT += dt;
+      const dt = Math.min((now - lastNow) / 1000, 0.05);
+      lastNow  = now;
+      idleT   += dt;
 
-      // Idle: body breathes (Y scale), antenna bobs, visor pulses
       if (!reducedMotion) {
-        const breathe = Math.sin(idleT * 1.4) * 0.015;
-        body.scale.y = 1 + breathe;
-        body.scale.x = 1 - breathe * 0.5;
-        antenna.rotation.z = Math.sin(idleT * 2.2) * 0.12;
-        accentMat.emissiveIntensity = 0.5 + 0.2 * Math.sin(idleT * 3.0);
-        pupilMat.emissiveIntensity  = 0.8 + 0.3 * Math.sin(idleT * 2.8 + 1.0);
+        // ── Idle animation: very gentle ────────────────────────
+        // Head bobs slightly — pivot point is neck
+        headGroup.rotation.z = Math.sin(idleT * 1.1) * 0.055;
+        headGroup.position.y = 0.85 + Math.sin(idleT * 1.8) * 0.025;
 
-        // Subtle left-right lean based on idle time
-        robot.rotation.z = Math.sin(idleT * 0.8) * 0.04;
-        // Face slightly toward viewer with gentle tilt
-        robot.rotation.y = Math.sin(idleT * 0.5) * 0.1;
-      }
+        // Antenna wobbles — lagging the head bob slightly
+        antennaGroup.rotation.z = Math.sin(idleT * 1.1 + 0.4) * 0.12;
 
-      // Jump animation
-      if (jumping) {
-        jumpElapsed += dt;
-        jumpT = Math.min(jumpElapsed / JUMP_DUR, 1);
+        // Visor emissive breathes
+        matAccent.emissiveIntensity = 0.45 + 0.2 * Math.sin(idleT * 2.5);
+        matPupil.emissiveIntensity  = 0.8  + 0.3 * Math.sin(idleT * 2.5 + 0.8);
 
-        if (!reducedMotion) {
-          // Parabolic arc: X stays fixed, Y follows ease curve
-          const ease = easeInOutCubic(jumpT);
-          robot.position.y = jumpFrom + (jumpTo - jumpFrom) * ease;
+        // Arms swing very gently (idle breathing feel)
+        armGroupL.rotation.z =  Math.sin(idleT * 1.1) * 0.06;
+        armGroupR.rotation.z = -Math.sin(idleT * 1.1) * 0.06;
 
-          // Arc height proportional to distance
-          const dist = Math.abs(jumpTo - jumpFrom);
-          const arcH = Math.min(dist * 0.7, 3.5);
-          const arc  = Math.sin(jumpT * Math.PI) * arcH;
-          robot.position.y += arc;
+        // Body barely moves (grounded, stable)
+        robot.rotation.y = 0.25 + Math.sin(idleT * 0.6) * 0.05;
 
-          // Squash on take-off and land, stretch mid-air
-          const stretchPhase = Math.sin(jumpT * Math.PI);
-          scaleY = 1.0 + stretchPhase * 0.28;
-          scaleX = 1.0 - stretchPhase * 0.14;
-          robot.scale.set(scaleX, scaleY, 1);
-
-          // Lean forward on ascent, backward on descent
-          robot.rotation.x = (0.5 - jumpT) * 0.3;
-        } else {
-          // Reduced motion: instant teleport
-          robot.position.y = jumpTo;
-          jumpT = 1;
-        }
-
-        if (jumpT >= 1) {
-          // Landed
-          jumping = false;
-          robot.position.y = jumpTo;
-          robot.scale.set(1, 1, 1);
-          robot.rotation.x = 0;
-          // Land squash: brief squash then spring back (handled in next idle frames)
-          if (!reducedMotion) {
-            scaleY = 0.78; scaleX = 1.22;
+        // ── Peek bounce animation ──────────────────────────────
+        if (peekPhase === 1) {
+          peekT += dt * 3.5; // speed of bounce
+          // Spring overshoot then settle: scaleY starts low, overshoots 1, settles
+          const t     = Math.min(peekT, 1);
+          const spring = 1 + Math.sin(t * Math.PI) * 0.18 * (1 - t);
+          robot.scale.y = 0.82 * spring;
+          robot.scale.x = 0.82 * (2 - spring); // anti-squash: X is inverse
+          if (peekT >= 1) {
+            peekPhase = 0;
+            robot.scale.setScalar(0.82); // reset to base scale
           }
-          waving = true; waveProgress = 0;
-        }
-      } else {
-        // Recover from land squash with spring
-        if (!reducedMotion) {
-          scaleY += (1 - scaleY) * 0.18;
-          scaleX += (1 - scaleX) * 0.18;
-          // Only apply if not overridden by idle breathe
-          // (breathe is subtle enough to compose)
         }
       }
-
-      // Wave arm after landing
-      if (waving && !reducedMotion) {
-        waveProgress += dt;
-        const wp = Math.min(waveProgress / WAVE_DUR, 1);
-        // Right arm waves up and down twice
-        armR.rotation.z = -Math.sin(wp * Math.PI * 2) * 0.9;
-        if (wp >= 1) { waving = false; armR.rotation.z = 0; }
-      }
-
-      // Update canvas size if viewport resized
-      // (handled in resize listener below, not here)
 
       renderer.render(scene, camera);
     }
     requestAnimationFrame(render);
 
-    // ── Resize ────────────────────────────────────────────────
+    // ── Reposition on window resize ───────────────────────────
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        const newCH = window.innerHeight;
-        renderer.setSize(CW, newCH);
-        camera.top    =  viewH / 2;
-        camera.bottom = -viewH / 2;
-        camera.updateProjectionMatrix();
-        // Re-position robot to current target
-        if (jumpTargets[currentTargetIndex]) {
-          robot.position.y = getTargetWorldY(jumpTargets[currentTargetIndex]);
-        }
+        if (currentHeadingEl) positionWrapAtHeading(currentHeadingEl);
       }, 150);
     }, { passive: true });
 
-    window.addEventListener('unload', () => cancelAnimationFrame(rafId), { once: true });
+    window.addEventListener('unload', () => {
+      cancelAnimationFrame(rafId);
+      headingObs.disconnect();
+    }, { once: true });
   }());
 
   /* ─────────────────────────────────────────────
