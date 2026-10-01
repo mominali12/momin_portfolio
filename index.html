@@ -1,283 +1,388 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<!-- ============ Vercel Analytics ============ -->
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
+  <!-- SEO -->
+  <title>Momin Ali — ML Engineer | Edge AI, TinyML & Production ML</title>
+  <meta name="description" content="Momin Ali is a Machine Learning Engineer with 5+ years across research and industry, deploying deep learning on microcontrollers (TinyML), building RAG/LLM systems, and engineering production ML pipelines on AWS, Azure and GCP. Best Paper Award, ACM-SAC 2026." />
+  <meta name="keywords" content="Machine Learning Engineer, ML Engineer, TinyML, Edge AI, Embedded ML, Deep Learning, PyTorch, TensorFlow, LLM, RAG, MLOps, Data Scientist, Applied Scientist, Data Engineer, AWS, Azure, GCP, Apache Spark, Momin Ali" />
+  <meta name="author" content="Momin Ali" />
+  <link rel="canonical" href="https://momin-ali.dev/" />
+  <meta name="robots" content="index, follow" />
 
-<!-- ============ Vercel Speed Insights ============ -->
-<script>
-  window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/speed-insights/script.js"></script>
+  <!-- Open Graph -->
+  <meta property="og:type" content="profile" />
+  <meta property="og:title" content="Momin Ali — ML Engineer | Edge AI, TinyML & Production ML" />
+  <meta property="og:description" content="Deep learning that runs in production and on microcontrollers. Best Paper Award, ACM-SAC 2026." />
+  <meta property="og:url" content="https://momin-ali.dev/" />
+  <meta property="og:image" content="https://mominali.vercel.app/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://mominali.vercel.app/og-image.png" />
 
-<!-- ============ SEO ============ -->
-<title>Momin Ali — ML Engineer | Edge AI, TinyML & Production ML</title>
-<meta name="description" content="Momin Ali is a Machine Learning Engineer with 5+ years across research and industry — deploying deep learning on microcontrollers (TinyML), building RAG/LLM systems, and engineering production ML pipelines on AWS, Azure and GCP. Best Paper Award, ACM-SAC 2026. Open to Data Scientist, ML Engineer and Applied Scientist roles." />
-<meta name="keywords" content="Machine Learning Engineer, ML Engineer, TinyML, Edge AI, Embedded ML, Deep Learning, PyTorch, TensorFlow, LLM, RAG, MLOps, Data Scientist, Applied Scientist, Data Engineer, AWS, Azure, GCP, Apache Spark, Momin Ali" />
-<meta name="author" content="Momin Ali" />
-<link rel="canonical" href="https://momin-ali.dev/" />
-<meta name="robots" content="index, follow" />
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Momin Ali",
+    "jobTitle": "Machine Learning Engineer",
+    "email": "mailto:mominali.works@gmail.com",
+    "url": "https://mominali.vercel.app/",
+    "sameAs": ["https://www.linkedin.com/in/momin12/"],
+    "worksFor": { "@type": "Organization", "name": "Kiel University, Distributed Systems Lab" },
+    "award": "Best Paper Award, ACM-SAC 2026"
+  }
+  </script>
 
-<!-- Open Graph / social -->
-<meta property="og:type" content="profile" />
-<meta property="og:title" content="Momin Ali — ML Engineer | Edge AI, TinyML & Production ML" />
-<meta property="og:description" content="Deep learning that runs in production and on microcontrollers. Best Paper Award, ACM-SAC 2026. Open to ML Engineer, Data Scientist & Applied Scientist roles." />
-<meta property="og:url" content="https://momin-ali.dev/" />
-<meta name="twitter:card" content="summary_large_image" />
+  <!-- Vercel Analytics -->
+  <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
 
-<meta property="og:image" content="https://mominali.vercel.app/og-image.png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="Momin Ali — ML Engineer. AI that runs on tiny devices." />
-<meta name="twitter:image" content="https://mominali.vercel.app/og-image.png" />
+  <!-- Fonts: Geist + Geist Mono via fontsource CDN (self-hostable in prod) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
 
-<!-- Structured data: Person -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "Momin Ali",
-  "jobTitle": "Machine Learning Engineer",
-  "email": "mailto:mominali.works@gmail.com",
-  "url": "https://mominali.vercel.app/",
-  "sameAs": ["https://www.linkedin.com/in/momin12/"],
-  "worksFor": { "@type": "Organization", "name": "Kiel University — Distributed Systems Lab" },
-  "alumniOf": [
-    { "@type": "CollegeOrUniversity", "name": "Information Technology University (MS, Data Science)" },
-    { "@type": "CollegeOrUniversity", "name": "National University of Computer and Emerging Sciences (BS, Computer Science)" }
-  ],
-  "knowsAbout": ["TinyML","Edge AI","Embedded Machine Learning","Deep Learning","PyTorch","TensorFlow","LLMs","RAG","MLOps","Cloud Data Engineering","AWS","Azure","GCP","Apache Spark"],
-  "award": "Best Paper Award, ACM-SAC 2026",
-  "knowsLanguage": ["English","Urdu","German"]
-}
-</script>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="/styles.css">
-
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- ============ HERO ============ -->
-<header class="hero">
-  <div class="wrap">
-    <nav class="navbar">
-      <div class="brandmark"><span class="dot">MA</span> Momin Ali</div>
-      <div class="nav-links">
-        <a href="#work">Work</a>
-        <a href="#capabilities">Capabilities</a>
-        <a href="#recognition">Recognition</a>
-        <a href="#contact">Contact</a>
-      </div>
-    </nav>
-
-    <span class="status"><span class="live"></span> Open to work · Remote worldwide · Hybrid EU</span>
-    <h1>Machine learning that ships — <span class="accent">from the cloud to the microcontroller.</span></h1>
-    <p class="lede">ML Engineer with 5+ years across research and industry. I build models that don't just perform in notebooks — they run in production and on the edge.</p>
-    <div class="cta">
-      <a class="btn btn-primary" href="#work">See selected work</a>
-      <a class="btn btn-ghost" href="mailto:mominali.works@gmail.com">Get in touch</a>
-      <a class="btn btn-ghost" href="https://www.linkedin.com/in/momin12/" target="_blank" rel="noopener">LinkedIn</a>
+<!-- NAV -->
+<nav class="nav" id="nav" aria-label="Primary navigation">
+  <div class="nav-inner wrap">
+    <a href="#" class="brandmark" aria-label="Momin Ali, home">
+      <span class="brandmark-initials" aria-hidden="true">MA</span>
+      Momin Ali
+    </a>
+    <div class="nav-links" role="list">
+      <a href="#work" role="listitem">Work</a>
+      <a href="#capabilities" role="listitem">Capabilities</a>
+      <a href="#recognition" role="listitem">Recognition</a>
+      <a href="#contact" role="listitem">Contact</a>
     </div>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+      <span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <a href="#work">Work</a>
+    <a href="#capabilities">Capabilities</a>
+    <a href="#recognition">Recognition</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO: split layout (DESIGN_VARIANCE 7, anti-center bias) -->
+<header class="hero" id="top">
+  <div class="hero-inner wrap">
+
+    <!-- Left column -->
+    <div class="hero-content">
+      <a href="#recognition" class="award-pill" aria-label="Best Paper Award, ACM-SAC 2026">
+        <span class="award-star" aria-hidden="true">★</span>
+        Best Paper, ACM-SAC 2026
+      </a>
+
+      <h1 class="hero-headline">
+        Machine learning<br>that ships.
+      </h1>
+
+      <p class="hero-sub">
+        5+ years deploying deep learning from cloud pipelines to microcontrollers.
+      </p>
+
+      <!-- One primary CTA, one secondary. No duplicate intent. (SKILL §4.5) -->
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#work">See the work</a>
+        <a class="btn btn-ghost" href="mailto:mominali.works@gmail.com">Get in touch</a>
+      </div>
+
+      <p class="hero-availability">
+        Open to work &middot; Remote worldwide &middot; Hybrid EU
+      </p>
+    </div>
+
+    <!-- Right column: stat grid -->
+    <div class="hero-stats" aria-label="Key metrics">
+      <div class="stat-cell">
+        <span class="stat-n" data-target="94" data-suffix="%">94%</span>
+        <span class="stat-l">Ship-detection accuracy on-device</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-n" data-target="5" data-suffix="+">5+</span>
+        <span class="stat-l">Years across research and industry</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-n" data-target="4" data-suffix="">4</span>
+        <span class="stat-l">Peer-reviewed venues including NeurIPS and SenSys</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-n" data-target="3" data-suffix="">3</span>
+        <span class="stat-l">Clouds in production: AWS, Azure, GCP</span>
+      </div>
+    </div>
+
   </div>
 
-  <svg class="wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-    <path id="wpath" fill="none" stroke="#15B3A4" stroke-width="2" opacity="0.85"/>
+  <!-- Acoustic waveform: motivated animation, communicates the domain (ship acoustics) -->
+  <svg class="hero-wave" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
+    <path id="wpath" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.6"/>
   </svg>
 </header>
 
-<!-- ============ STAT STRIP ============ -->
-<div class="strip">
+<!-- THESIS: full-width editorial statement -->
+<section class="thesis" aria-label="About">
   <div class="wrap">
-    <div class="stat"><div class="n">94%</div><div class="l">Ship-detection accuracy on-device</div></div>
-    <div class="stat"><div class="n">5+</div><div class="l">Years, research + industry</div></div>
-    <div class="stat"><div class="n">4</div><div class="l">Peer-reviewed venues (NeurIPS, SenSys…)</div></div>
-    <div class="stat"><div class="n">3</div><div class="l">Clouds in production (AWS·Azure·GCP)</div></div>
-  </div>
-</div>
-
-<!-- ============ THESIS ============ -->
-<section class="thesis">
-  <div class="wrap">
-    <p>Most ML never leaves the notebook. <span class="hl">Mine runs where it's needed</span> — on constrained hardware, at scale, in production.</p>
-    <p class="sub">I work at the seam between deep-learning research and shipped systems: compressing models small enough for microcontrollers, wiring up reliable data and RAG pipelines, and deploying across AWS, Azure and GCP. Award-winning research, backed by real production engineering.</p>
-  </div>
-</section>
-
-<!-- ============ SELECTED WORK ============ -->
-<section id="work">
-  <div class="wrap">
-    <div class="sec-head"><span class="idx">01</span><h2>Selected work</h2></div>
-    <div class="cards">
-
-      <div class="card award">
-        <div class="ribbon"><span class="star"></span> Best Paper · ACM-SAC 2026</div>
-        <span class="tag">Edge AI · TinyML</span>
-        <h3>Ship detection on a microcontroller</h3>
-        <p>Deep-learning model for acoustic ship classification, compressed and deployed on a resource-constrained microcontroller — full inference at the edge, no cloud round-trip.</p>
-        <div class="metric"><span class="big">94%</span><span class="cap">accuracy on-device · Best Paper Award, ACM-SAC 2026</span></div>
-      </div>
-
-      <div class="card">
-        <span class="tag">Edge Vision</span>
-        <h3>Railroad safety in adverse weather</h3>
-        <p>Object-detection system engineered to hold up in low-visibility, high-risk conditions — built for reliability where a missed detection has real-world cost.</p>
-        <div class="metric"><span class="big">Real-time</span><span class="cap">low-visibility object detection</span></div>
-      </div>
-
-      <div class="card">
-        <span class="tag">LLMs · RAG</span>
-        <h3>RAG systems for faster processing</h3>
-        <p>Retrieval-augmented generation pipelines that cut end-to-end processing time while keeping answers grounded in source documents.</p>
-        <div class="metric"><span class="big">-25%</span><span class="cap">processing time</span></div>
-      </div>
-
-      <div class="card">
-        <span class="tag">Cloud · Data Engineering</span>
-        <h3>Multi-cloud migration, zero data loss</h3>
-        <p>Led migration of Pakistan's largest telecom (Veon–Jazz) to AWS, Azure and GCP, and automated the data-verification pipeline behind it — CI/CD, Docker, Kubernetes.</p>
-        <div class="metric"><span class="big">45%</span><span class="cap">faster verification · zero data loss</span></div>
-      </div>
-
-      <div class="card">
-        <span class="tag">Scalable ML</span>
-        <h3>One model, any device</h3>
-        <p>Reusable CNN frameworks designed for the real, resource-constrained world — the same architecture scaling from server to sensor.</p>
-        <div class="metric"><span class="big">21%</span><span class="cap">ELT integrity gain via metadata validation</span></div>
-      </div>
-
-      <div class="card">
-        <span class="tag">Applied Research</span>
-        <h3>NLP & medical imaging (earlier work)</h3>
-        <p>Fine-tuned BERT over 10k medical documents for citation retrieval, processed 80M+ Scopus/CiteSeerX records, and built a COVID-19 X-ray classifier.</p>
-        <div class="metric"><span class="big">0.80 F1</span><span class="cap">BERT · plus 94% precision X-ray CNN</span></div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ============ CAPABILITIES ============ -->
-<section id="capabilities" class="thesis">
-  <div class="wrap">
-    <div class="sec-head"><span class="idx">02</span><h2>Capabilities</h2></div>
-    <div class="caps">
-      <div class="cap-col">
-        <h3>Edge & On-Device ML</h3>
-        <ul><li>TinyML</li><li>Model compression</li><li>Embedded systems</li><li>Microcontrollers</li><li>CNN architectures</li></ul>
-      </div>
-      <div class="cap-col">
-        <h3>Deep Learning & LLMs</h3>
-        <ul><li>PyTorch</li><li>TensorFlow</li><li>LLMs</li><li>RAG</li><li>BERT / NLP</li><li>Computer vision</li></ul>
-      </div>
-      <div class="cap-col">
-        <h3>Cloud, Data & MLOps</h3>
-        <ul><li>AWS</li><li>Azure</li><li>GCP</li><li>Apache Spark</li><li>ETL / ELT</li><li>Docker</li><li>Kubernetes</li><li>CI/CD</li></ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ RECOGNITION ============ -->
-<section id="recognition" class="rec">
-  <div class="wrap">
-    <div class="sec-head"><span class="idx">03</span><h2>Recognition & research</h2></div>
-    <div class="rec-grid">
-      <div class="rec-award">
-        <div class="lbl">★ Award</div>
-        <h3>Best Paper Award</h3>
-        <p>ACM Symposium on Applied Computing (ACM-SAC) 2026 — for deploying an accurate deep-learning ship-detection model on a resource-constrained microcontroller.</p>
-      </div>
-      <div class="venues">
-        <div class="lbl">Peer-reviewed at</div>
-        <div class="row"><span>NeurIPS</span><span>SenSys</span><span>EWSN</span><span>DCOSS</span></div>
-        <div class="certs">
-          <strong style="color:#fff;font-weight:600">Certifications</strong><br>
-          Deep Learning — Neural Networks & Hyperparameter Tuning<br>
-          Microsoft Certified: Azure Fundamentals<br>
-          Cloud Computing — Core Concepts & Application Migration
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ EXPERIENCE ============ -->
-<section id="experience">
-  <div class="wrap">
-    <div class="sec-head"><span class="idx">04</span><h2>Experience</h2></div>
-    <div class="tl">
-      <div class="tl-item">
-        <div class="when">Mar 2023 — Present</div>
-        <h3>Research Engineer, Data Science</h3>
-        <div class="org">Kiel University — Distributed Systems Lab · Germany</div>
-        <div class="desc">Deploying deep learning on resource-constrained devices. Award-winning on-device ship detection, railway-safety vision, and scalable CNN frameworks.</div>
-      </div>
-      <div class="tl-item">
-        <div class="when">Sep 2021 — Mar 2023</div>
-        <h3>Software Engineer I → II</h3>
-        <div class="org">Teradata · Pakistan</div>
-        <div class="desc">Designed and developed data pipelines for a national telecom migration to AWS/Azure/GCP with zero data loss; automated data verification (45% faster); built ELT pipelines in Teradata Vantage and CI/CD for data-integrity modules.</div>
-      </div>
-      <div class="tl-item">
-        <div class="when">Aug 2019 — Sep 2021</div>
-        <h3>Research Engineer, Data Science</h3>
-        <div class="org">Information Technology University · Pakistan</div>
-        <div class="desc">NLP and medical-imaging research: BERT citation retrieval (0.80 F1), 80M-record processing pipelines, and a COVID-19 X-ray CNN (94% precision / 95% recall).</div>
-      </div>
-    </div>
-    <p style="margin-top:26px;color:var(--slate);font-size:.9rem">
-      <strong>Education:</strong> MS Data Science, Information Technology University · BS Computer Science, FAST-NUCES.
-      &nbsp;·&nbsp; <strong>Languages:</strong> English (professional), Urdu (native), German (elementary).
+    <p class="thesis-lead">
+      Most ML never leaves the notebook. <strong>Mine runs where it matters:</strong> on constrained hardware, at scale, in production.
+    </p>
+    <p class="thesis-body">
+      I work at the seam between deep-learning research and shipped systems: compressing models for microcontrollers, building reliable RAG pipelines, and deploying across AWS, Azure and GCP.
     </p>
   </div>
 </section>
 
-<!-- ============ CONTACT ============ -->
-<section id="contact" class="contact">
+<!-- SELECTED WORK -->
+<section id="work" class="section">
   <div class="wrap">
-    <h2>Let's build ML that <span class="accent">actually ships.</span></h2>
-    <p>Open to Data Scientist, ML Engineer, Applied Scientist and Edge-AI roles — remote worldwide, or hybrid in the EU.</p>
-    <div class="links">
-      <a class="btn btn-primary" href="mailto:mominali.works@gmail.com">mominali.works@gmail.com</a>
-      <a class="btn btn-ghost" href="https://www.linkedin.com/in/momin12/" target="_blank" rel="noopener">linkedin.com/in/momin12</a>
+    <h2 class="section-title">Selected work</h2>
+
+    <div class="work-grid">
+
+      <!-- Award card: full width, visually distinct -->
+      <article class="card card-award" aria-label="Featured project: Ship detection">
+        <div class="card-award-inner">
+          <div class="card-award-content">
+            <div class="card-tags">
+              <span class="tag">Edge AI</span>
+              <span class="tag">TinyML</span>
+            </div>
+            <h3>Ship detection on a microcontroller</h3>
+            <p>Deep-learning model for acoustic ship classification, compressed and deployed on a resource-constrained microcontroller. Full inference at the edge, no cloud required.</p>
+            <div class="card-metric">
+              <span class="metric-value">94%</span>
+              <span class="metric-label">accuracy on-device</span>
+            </div>
+          </div>
+          <div class="card-award-badge" aria-label="Award">
+            <span class="badge-star" aria-hidden="true">★</span>
+            <span class="badge-text">Best Paper<br>ACM-SAC 2026</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Remaining 5 projects in offset 2-col grid (DESIGN_VARIANCE 7) -->
+      <article class="card" aria-label="Project: Railroad safety">
+        <div class="card-tags"><span class="tag">Edge Vision</span></div>
+        <h3>Railroad safety in adverse weather</h3>
+        <p>Object-detection system built for reliability in low-visibility, high-risk conditions. A missed detection here has real-world cost.</p>
+        <div class="card-metric">
+          <span class="metric-value">Real-time</span>
+          <span class="metric-label">low-visibility object detection</span>
+        </div>
+      </article>
+
+      <article class="card" aria-label="Project: RAG systems">
+        <div class="card-tags"><span class="tag">LLMs</span><span class="tag">RAG</span></div>
+        <h3>RAG systems for faster processing</h3>
+        <p>Retrieval-augmented generation pipelines that cut end-to-end processing time while keeping answers grounded in source documents.</p>
+        <div class="card-metric">
+          <span class="metric-value">-25%</span>
+          <span class="metric-label">processing time</span>
+        </div>
+      </article>
+
+      <article class="card card-wide" aria-label="Project: Multi-cloud migration">
+        <div class="card-tags"><span class="tag">Cloud</span><span class="tag">Data Engineering</span></div>
+        <h3>Multi-cloud migration, zero data loss</h3>
+        <p>Led migration of Pakistan's largest telecom to AWS, Azure and GCP. Automated the data-verification pipeline with CI/CD, Docker, and Kubernetes.</p>
+        <div class="card-metric">
+          <span class="metric-value">45%</span>
+          <span class="metric-label">faster verification with zero data loss</span>
+        </div>
+      </article>
+
+      <article class="card" aria-label="Project: Scalable CNN">
+        <div class="card-tags"><span class="tag">Scalable ML</span></div>
+        <h3>One model, any device</h3>
+        <p>Reusable CNN frameworks designed for the resource-constrained world. The same architecture scales from server to sensor.</p>
+        <div class="card-metric">
+          <span class="metric-value">21%</span>
+          <span class="metric-label">ELT integrity gain</span>
+        </div>
+      </article>
+
+      <article class="card" aria-label="Project: NLP and medical imaging">
+        <div class="card-tags"><span class="tag">Applied Research</span></div>
+        <h3>NLP and medical imaging</h3>
+        <p>Fine-tuned BERT over 10k medical documents for citation retrieval, processed 80M+ records, and built a COVID-19 X-ray classifier.</p>
+        <div class="card-metric">
+          <span class="metric-value">0.80 F1</span>
+          <span class="metric-label">BERT citation retrieval</span>
+        </div>
+      </article>
+
     </div>
   </div>
 </section>
 
-<footer>© 2026 Momin Ali · ML Engineer · Built to ship.</footer>
+<!-- CAPABILITIES: scroll-snap pills (replaces bullet list for >5 items, SKILL §4.9) -->
+<section id="capabilities" class="section section-subtle" aria-label="Capabilities">
+  <div class="wrap">
+    <h2 class="section-title">Capabilities</h2>
+    <div class="caps-grid">
 
-<script>
-  // animated acoustic waveform signature in the hero
-  (function(){
-    const path = document.getElementById('wpath');
-    if(!path) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const W=1440, H=120, mid=H*0.55, N=180;
-    function build(t){
-      let d="M0,"+mid;
-      for(let i=0;i<=N;i++){
-        const x=(i/N)*W;
-        const p=i/N;
-        const env=Math.exp(-1.6*p)*(0.4+0.6*Math.sin(p*Math.PI));
-        const y=mid + Math.sin(p*40 + t)*34*env + Math.sin(p*13 - t*0.6)*8*env;
-        d+=" L"+x.toFixed(1)+","+y.toFixed(1);
-      }
-      path.setAttribute('d', d);
-    }
-    if(reduce){ build(0); return; }
-    let t=0;
-    (function loop(){ t+=0.03; build(t); requestAnimationFrame(loop); })();
-  })();
-</script>
+      <div class="cap-group">
+        <h3 class="cap-title">Edge &amp; On-Device ML</h3>
+        <div class="pill-row" role="list" aria-label="Edge and on-device ML skills">
+          <span class="pill" role="listitem">TinyML</span>
+          <span class="pill" role="listitem">Model compression</span>
+          <span class="pill" role="listitem">Embedded systems</span>
+          <span class="pill" role="listitem">Microcontrollers</span>
+          <span class="pill" role="listitem">CNN architectures</span>
+        </div>
+      </div>
+
+      <div class="cap-group">
+        <h3 class="cap-title">Deep Learning &amp; LLMs</h3>
+        <div class="pill-row" role="list" aria-label="Deep learning and LLM skills">
+          <span class="pill" role="listitem">PyTorch</span>
+          <span class="pill" role="listitem">TensorFlow</span>
+          <span class="pill" role="listitem">LLMs</span>
+          <span class="pill" role="listitem">RAG</span>
+          <span class="pill" role="listitem">BERT / NLP</span>
+          <span class="pill" role="listitem">Computer vision</span>
+        </div>
+      </div>
+
+      <div class="cap-group">
+        <h3 class="cap-title">Cloud, Data &amp; MLOps</h3>
+        <div class="pill-row" role="list" aria-label="Cloud and MLOps skills">
+          <span class="pill" role="listitem">AWS</span>
+          <span class="pill" role="listitem">Azure</span>
+          <span class="pill" role="listitem">GCP</span>
+          <span class="pill" role="listitem">Apache Spark</span>
+          <span class="pill" role="listitem">ETL / ELT</span>
+          <span class="pill" role="listitem">Docker</span>
+          <span class="pill" role="listitem">Kubernetes</span>
+          <span class="pill" role="listitem">CI/CD</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- RECOGNITION: different layout family from work section -->
+<section id="recognition" class="section" aria-label="Recognition and research">
+  <div class="wrap">
+    <h2 class="section-title">Recognition</h2>
+
+    <div class="rec-layout">
+      <!-- Award block: large typographic treatment -->
+      <div class="rec-award-block">
+        <p class="rec-award-label">Best Paper Award</p>
+        <p class="rec-award-venue">ACM Symposium on Applied Computing, 2026</p>
+        <p class="rec-award-desc">For deploying an accurate deep-learning ship-detection model on a resource-constrained microcontroller.</p>
+      </div>
+
+      <!-- Right: venues + certs, visually separated -->
+      <div class="rec-right">
+        <div class="rec-venues">
+          <p class="rec-venues-label">Peer-reviewed at</p>
+          <div class="venue-chips" role="list">
+            <span class="venue-chip" role="listitem">NeurIPS</span>
+            <span class="venue-chip" role="listitem">SenSys</span>
+            <span class="venue-chip" role="listitem">EWSN</span>
+            <span class="venue-chip" role="listitem">DCOSS</span>
+          </div>
+        </div>
+        <div class="rec-certs">
+          <p class="rec-venues-label">Certifications</p>
+          <ul class="cert-list">
+            <li>Deep Learning: Neural Networks &amp; Hyperparameter Tuning</li>
+            <li>Microsoft Certified: Azure Fundamentals</li>
+            <li>Cloud Computing: Core Concepts &amp; Application Migration</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- EXPERIENCE: timeline, different layout family again -->
+<section id="experience" class="section section-subtle" aria-label="Experience">
+  <div class="wrap">
+    <h2 class="section-title">Experience</h2>
+
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-when">Mar 2023 - Present</div>
+        <div class="tl-body">
+          <h3>Research Engineer, Data Science</h3>
+          <p class="tl-org">Kiel University, Distributed Systems Lab, Germany</p>
+          <p class="tl-desc">Deploying deep learning on resource-constrained devices. Award-winning on-device ship detection, railway-safety vision, and scalable CNN frameworks.</p>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-when">Sep 2021 - Mar 2023</div>
+        <div class="tl-body">
+          <h3>Software Engineer I to II</h3>
+          <p class="tl-org">Teradata, Pakistan</p>
+          <p class="tl-desc">Designed data pipelines for a national telecom migration to AWS, Azure and GCP with zero data loss. Automated data verification (45% faster) and built ELT pipelines with CI/CD.</p>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-when">Aug 2019 - Sep 2021</div>
+        <div class="tl-body">
+          <h3>Research Engineer, Data Science</h3>
+          <p class="tl-org">Information Technology University, Pakistan</p>
+          <p class="tl-desc">NLP and medical-imaging research: BERT citation retrieval (0.80 F1), 80M-record processing pipelines, and a COVID-19 X-ray CNN (94% precision, 95% recall).</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="exp-footer">
+      <span><strong>Education:</strong> MS Data Science, ITU &middot; BS Computer Science, FAST-NUCES</span>
+      <span><strong>Languages:</strong> English (professional), Urdu (native), German (elementary)</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT: full-width, highest visual weight, single CTA intent -->
+<section id="contact" class="section-contact" aria-label="Contact">
+  <div class="wrap">
+    <h2 class="contact-headline">
+      Let's build ML that ships.
+    </h2>
+    <p class="contact-sub">Open to ML Engineer, Data Scientist, Applied Scientist and Edge AI roles, remote worldwide, or hybrid in the EU.</p>
+    <div class="contact-links">
+      <a class="contact-email" href="mailto:mominali.works@gmail.com">mominali.works@gmail.com</a>
+      <a class="btn btn-ghost-inv" href="https://www.linkedin.com/in/momin12/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer" role="contentinfo">
+  <div class="wrap footer-inner">
+    <span>© 2026 Momin Ali</span>
+    <span>ML Engineer</span>
+    <a href="#top">Back to top</a>
+  </div>
+</footer>
+
+<script src="main.js"></script>
 </body>
 </html>
