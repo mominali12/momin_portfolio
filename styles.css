@@ -1,154 +1,1121 @@
-:root{
-  --ink:#0B1B2B; --ink-2:#0F2436; --ink-3:#16324a;
-  --paper:#F5F3EC; --paper-2:#EEEBE0;
-  --teal:#15B3A4; --teal-dark:#0E8f83; --amber:#F5A623;
-  --muted:#8FA3B0; --slate:#54636E; --line:rgba(11,27,43,.12);
-  --maxw:1080px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased}
-h1,h2,h3{font-family:"Space Grotesk",sans-serif;line-height:1.1;letter-spacing:-.01em}
-.mono{font-family:"JetBrains Mono",monospace}
-a{color:inherit}
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-.eyebrow{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--teal-dark)}
+/* ============================================================
+   DESIGN TOKENS
+   One accent (steel blue, fits the maritime/acoustics domain).
+   One corner-radius scale. One palette. Shape + color consistency locked.
+   SKILL §4.2 Color Consistency Lock / §4.4 Shape Consistency Lock
+   ============================================================ */
 
-/* ---------- HERO ---------- */
-header.hero{background:var(--ink);color:#fff;position:relative;overflow:hidden;padding:34px 0 76px}
-.navbar{display:flex;justify-content:space-between;align-items:center;padding:6px 0 40px;flex-wrap:wrap;gap:14px}
-.brandmark{display:flex;align-items:center;gap:10px;font-family:"Space Grotesk";font-weight:700}
-.brandmark .dot{width:26px;height:26px;border:1.5px solid var(--teal);border-radius:50%;display:grid;place-items:center;font-size:.66rem;color:#fff}
-.nav-links{display:flex;gap:26px;font-size:.86rem;flex-wrap:wrap}
-.nav-links a{color:var(--muted);text-decoration:none;transition:color .2s}
-.nav-links a:hover{color:var(--teal)}
-.status{display:inline-flex;align-items:center;gap:8px;font-family:"JetBrains Mono";font-size:.74rem;color:var(--teal);border:1px solid rgba(21,179,164,.35);padding:5px 12px;border-radius:999px;margin-bottom:22px}
-.status .live{width:7px;height:7px;background:var(--teal);border-radius:50%;box-shadow:0 0 0 0 rgba(21,179,164,.6);animation:pulse 2.4s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(21,179,164,.5)}70%{box-shadow:0 0 0 8px rgba(21,179,164,0)}100%{box-shadow:0 0 0 0 rgba(21,179,164,0)}}
-header h1{font-size:clamp(2.5rem,6vw,4.3rem);font-weight:700;max-width:15ch}
-header h1 .accent{color:var(--teal)}
-.lede{color:#C6D2DA;font-size:clamp(1.02rem,2vw,1.2rem);max-width:52ch;margin:22px 0 30px}
-.cta{display:flex;gap:14px;flex-wrap:wrap}
+:root {
+  /* Background + surface */
+  --bg:          #F7F7F5;   /* warm off-white, NOT pure #fff */
+  --bg-subtle:   #F0F0EE;   /* section tint */
+  --surface:     #FFFFFF;
+  --border:      #E2E2DE;
+  --border-strong: #C8C8C2;
 
-/* buttons — clickable across full padded area */
-.btn{font-family:"Space Grotesk";font-weight:600;font-size:.92rem;padding:12px 22px;border-radius:8px;text-decoration:none;transition:transform .15s,background .2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;line-height:1;box-sizing:border-box}
-.btn *{pointer-events:none}
-.btn-primary{background:var(--teal);color:var(--ink)}
-.btn-primary:hover{transform:translateY(-2px);background:#1ccbba}
-.btn-ghost{border:1px solid rgba(255,255,255,.28);color:#fff}
-.btn-ghost:hover{border-color:var(--teal);color:var(--teal)}
-.btn-hire{background:var(--amber);color:var(--ink);box-shadow:0 6px 20px rgba(245,166,35,.35)}
-.btn-hire:hover{transform:translateY(-2px);background:#ffb840}
+  /* Text */
+  --text-primary:   #111210;  /* near-black, NOT pure #000000 */
+  --text-secondary: #4A4A46;
+  --text-muted:     #767670;
 
-/* waveform signature — decorative, must not block clicks */
-.wave{position:absolute;left:0;right:0;bottom:0;width:100%;height:120px;opacity:.9;pointer-events:none}
+  /* Accent: steel blue - fits maritime acoustics, one color, whole page */
+  --accent:        #2C6EAB;
+  --accent-hover:  #235A8F;
+  --accent-subtle: #EBF2FA;
+  --accent-fg:     #FFFFFF;
 
-/* ---------- STAT STRIP ---------- */
-.strip{background:var(--ink-2);color:#fff;border-top:1px solid rgba(255,255,255,.06)}
-.strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:26px 24px}
-.stat .n{font-family:"JetBrains Mono";font-weight:600;font-size:1.7rem;color:var(--teal)}
-.stat .l{font-size:.8rem;color:var(--muted);margin-top:2px}
+  /* One corner-radius scale. SKILL §4.4 */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  14px;
+  --radius-pill: 999px;
 
-/* ---------- SECTIONS ---------- */
-section{padding:74px 0}
-.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:34px}
-.sec-head h2{font-size:clamp(1.6rem,3.4vw,2.2rem);font-weight:600}
-.sec-head .idx{font-family:"JetBrains Mono";color:var(--teal-dark);font-size:.85rem}
+  /* Z-index: named layers only, no arbitrary z-50 spam. SKILL §6.F */
+  --z-nav: 50;
 
-.thesis{background:var(--paper-2)}
-.thesis p{font-family:"Space Grotesk";font-weight:500;font-size:clamp(1.3rem,3vw,1.9rem);line-height:1.35;max-width:24ch;letter-spacing:-.01em}
-.thesis p .hl{color:var(--teal-dark)}
-.thesis .sub{font-family:Inter;font-weight:400;font-size:1rem;color:var(--slate);max-width:60ch;margin-top:20px}
+  /* Type */
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
 
-/* ---------- WORK CARDS ---------- */
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px;transition:transform .18s,box-shadow .18s;position:relative}
-.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(11,27,43,.09)}
-.card .tag{font-family:"JetBrains Mono";font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-dark);background:rgba(21,179,164,.1);padding:4px 9px;border-radius:5px;display:inline-block;margin-bottom:16px}
-.card h3{font-size:1.16rem;font-weight:600;margin-bottom:8px;overflow-wrap:break-word;hyphens:auto}
-.card p{font-size:.94rem;color:var(--slate);overflow-wrap:break-word;word-wrap:break-word;hyphens:auto}
-.card .metric{display:flex;align-items:baseline;gap:10px;margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);flex-wrap:wrap}
-.card .metric .big{font-family:"JetBrains Mono";font-weight:600;font-size:1.5rem;color:var(--ink);white-space:nowrap}
-.card .metric .cap{font-size:.8rem;color:var(--muted);flex:1;min-width:0}
-.card.award{border-color:rgba(245,166,35,.5);box-shadow:0 0 0 1px rgba(245,166,35,.18)}
-.card.award .tag{color:#b9770c;background:rgba(245,166,35,.14)}
-.ribbon{position:absolute;top:20px;right:20px;font-family:"JetBrains Mono";font-size:.66rem;color:#b9770c;display:flex;align-items:center;gap:6px}
-.ribbon .star{width:7px;height:7px;background:var(--amber);border-radius:50%}
-
-/* ---------- CAPABILITIES ---------- */
-.caps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.cap-col{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px}
-.cap-col h3{font-size:1rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:9px}
-.cap-col h3::before{content:"";width:9px;height:9px;background:var(--teal);border-radius:2px}
-.cap-col ul{list-style:none;display:flex;flex-wrap:wrap;gap:7px}
-.cap-col li{font-family:"JetBrains Mono";font-size:.76rem;color:var(--slate);background:var(--paper);border:1px solid var(--line);padding:5px 10px;border-radius:6px}
-
-/* ---------- RECOGNITION ---------- */
-.rec{background:var(--ink);color:#fff}
-.rec .sec-head h2{color:#fff}
-.rec-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:28px}
-.rec-award{background:linear-gradient(135deg,rgba(245,166,35,.14),rgba(21,179,164,.06));border:1px solid rgba(245,166,35,.3);border-radius:14px;padding:28px}
-.rec-award .lbl{font-family:"JetBrains Mono";font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
-.rec-award h3{font-size:1.5rem;margin:10px 0 6px}
-.rec-award p{color:var(--muted);font-size:.92rem}
-.venues{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:28px}
-.venues .lbl{font-family:"JetBrains Mono";font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
-.venues .row{display:flex;flex-wrap:wrap;gap:10px}
-.venues .row span{font-family:"Space Grotesk";font-weight:600;border:1px solid rgba(255,255,255,.16);padding:8px 14px;border-radius:8px;font-size:.9rem}
-.certs{margin-top:18px;color:var(--muted);font-size:.86rem;line-height:1.9}
-
-/* ---------- TIMELINE ---------- */
-.tl{border-left:2px solid var(--line);margin-left:6px}
-.tl-item{position:relative;padding:0 0 30px 28px}
-.tl-item::before{content:"";position:absolute;left:-7px;top:5px;width:12px;height:12px;background:var(--paper);border:2px solid var(--teal);border-radius:50%}
-.tl-item:last-child{padding-bottom:0}
-.tl-item .when{font-family:"JetBrains Mono";font-size:.76rem;color:var(--teal-dark)}
-.tl-item h3{font-size:1.06rem;font-weight:600;margin:3px 0}
-.tl-item .org{color:var(--slate);font-size:.92rem}
-.tl-item .desc{color:var(--slate);font-size:.9rem;margin-top:6px;max-width:66ch}
-
-/* ---------- CONTACT ---------- */
-.contact{background:var(--ink-2);color:#fff;text-align:center}
-.contact h2{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;margin-bottom:12px}
-.contact h2 .accent{color:var(--teal)}
-.contact p{color:var(--muted);max-width:48ch;margin:0 auto 26px}
-.contact .links{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-footer{background:var(--ink);color:var(--muted);font-size:.8rem;text-align:center;padding:26px 0;font-family:"JetBrains Mono"}
-
-/* ---------- MOBILE ---------- */
-@media(max-width:760px){
-  .cards{grid-template-columns:1fr}
-  .caps{grid-template-columns:1fr}
-  .rec-grid{grid-template-columns:1fr;gap:20px}
-}
-@media(max-width:720px){
-  .strip .wrap{grid-template-columns:repeat(2,1fr);gap:22px}
-  .wrap{padding:0 20px}
-  section{padding:56px 0}
-  header.hero{padding:24px 0 60px}
-  .navbar{padding:6px 0 30px}
-  .nav-links{gap:16px;font-size:.82rem}
-  header h1{font-size:2.25rem;max-width:100%}
-  .lede{font-size:1rem;margin:18px 0 24px}
-  .cta{flex-direction:column;align-items:stretch;gap:10px}
-  .cta .btn{width:100%}
-  .sec-head{margin-bottom:24px;flex-wrap:wrap;gap:10px}
-  .thesis p{max-width:100%}
-  .card{padding:22px}
-  .ribbon{position:static;margin-bottom:10px;justify-content:flex-start}
-  .card .tag{margin-bottom:12px}
-  .card .metric{flex-direction:column;align-items:flex-start;gap:4px}
-  .card .metric .big{font-size:1.3rem}
-  .rec-award,.venues{padding:22px}
-  .tl-item{padding:0 0 26px 22px}
-  .contact .links{flex-direction:column;align-items:stretch}
-  .contact .links .btn{width:100%}
-}
-@media(max-width:400px){
-  header h1{font-size:1.95rem}
-  .nav-links{width:100%;justify-content:flex-start}
+  /* Spacing rhythm */
+  --section-py: 96px;
+  --wrap-max:   1200px;
+  --wrap-px:    24px;
 }
 
-@media(prefers-reduced-motion:reduce){
-  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+/* Dark mode tokens - mandatory. SKILL §6.C / §8 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:            #111210;
+    --bg-subtle:     #161714;
+    --surface:       #1C1D1B;
+    --border:        #2A2B28;
+    --border-strong: #3D3E3A;
+
+    --text-primary:   #F0F0ED;
+    --text-secondary: #A8A8A2;
+    --text-muted:     #6A6A64;
+
+    --accent:        #4D9DD4;
+    --accent-hover:  #66AFDE;
+    --accent-subtle: #152130;
+    --accent-fg:     #FFFFFF;
+  }
+}
+
+/* Reduced motion: collapse all animations. SKILL §6.B - mandatory */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  /* Page theme lock: ONE background, whole page. SKILL §4.11 */
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ============================================================
+   LAYOUT UTILITIES
+   ============================================================ */
+
+.wrap {
+  max-width: var(--wrap-max);
+  margin-inline: auto;
+  padding-inline: var(--wrap-px);
+}
+
+.section {
+  padding-block: var(--section-py);
+}
+
+.section-subtle {
+  background-color: var(--bg-subtle);
+}
+
+/* ============================================================
+   NAV
+   Single line at desktop, ≤80px height. SKILL §4.7
+   Scroll-hide behavior in JS.
+   ============================================================ */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-nav);
+  background-color: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease;
+}
+
+.nav.hidden {
+  transform: translateY(-100%);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;  /* ≤80px. SKILL §4.7 */
+}
+
+.brandmark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.brandmark-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-links a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: var(--accent);
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--text-primary);
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+  width: 100%;
+}
+
+/* Mobile menu toggle */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 100%;
+  height: 1.5px;
+  background: var(--text-primary);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  transform-origin: center;
+}
+
+.nav-toggle[aria-expanded="true"] span:first-child {
+  transform: translateY(6.5px) rotate(45deg);
+}
+
+.nav-toggle[aria-expanded="true"] span:last-child {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  padding: 16px 24px 24px;
+  gap: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.mobile-menu a {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding-block: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-menu a:last-child {
+  border-bottom: none;
+}
+
+.mobile-menu.open {
+  display: flex;
+}
+
+/* ============================================================
+   BUTTONS
+   WCAG AA contrast checked. No white-on-white. One label per intent. SKILL §4.5
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;          /* CTA wrap ban. SKILL §4.5 */
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  border: 1.5px solid transparent;
+}
+
+/* Active state: tactile push. SKILL §4.5 */
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-fg);       /* white on steel blue: contrast ≈7:1, WCAG AA pass */
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+/* Inverted ghost for dark contact section */
+.btn-ghost-inv {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--accent-fg);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.btn-ghost-inv:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-1px);
+}
+
+.btn-ghost-inv:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================
+   HERO
+   Split layout - text left, stats right. SKILL §4.3 anti-center bias.
+   min-h: 100dvh, NOT h-screen. SKILL §3.E viewport stability.
+   ============================================================ */
+
+.hero {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 64px; /* nav height offset */
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;  /* 50/50 split */
+  gap: 64px;
+  align-items: center;
+  padding-block: 80px 120px; /* pt max ~pt-24 equiv. SKILL §4.7 hero top padding cap */
+}
+
+/* Award pill: surfaces the credential in the first viewport. SKILL §4.7 hero stack discipline */
+.award-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  margin-bottom: 24px;
+  width: fit-content;
+  transition: background-color 0.15s ease;
+}
+
+.award-pill:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.award-star {
+  font-size: 0.8rem;
+}
+
+/* Hero headline: display scale, tracking tight. SKILL §4.1 */
+.hero-headline {
+  font-size: clamp(2.5rem, 4vw + 1rem, 3.75rem); /* max ~60px, ≤2 lines. SKILL §4.7 */
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+/* NO em-dash anywhere. SKILL §9.G */
+.hero-sub {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 52ch;
+  margin-bottom: 32px;
+  /* ≤20 words enforced in markup. SKILL §4.7 */
+}
+
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.hero-availability {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  /* No decorative dot/live indicator. SKILL §9.F */
+}
+
+/* Stats grid - 2×2 */
+.hero-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.stat-cell {
+  background: var(--surface);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-n {
+  font-family: var(--font-mono);
+  font-size: 2.25rem;
+  font-weight: 500;
+  color: var(--accent);            /* accent used consistently. SKILL §4.2 */
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-l {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Acoustic wave: motivated by the ship-acoustics domain */
+.hero-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   THESIS
+   Full-width editorial statement. Different layout family from hero.
+   ============================================================ */
+
+.thesis {
+  padding-block: 72px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.thesis-lead {
+  font-size: clamp(1.25rem, 2vw + 0.5rem, 1.625rem);
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+  max-width: 72ch;
+  margin-bottom: 16px;
+}
+
+.thesis-lead strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.thesis-body {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 65ch;
+}
+
+/* ============================================================
+   SECTION TITLES
+   No eyebrow labels. Title stands alone. SKILL §9.F / frontend-design skill.
+   ============================================================ */
+
+.section-title {
+  font-size: clamp(1.5rem, 2.5vw + 0.5rem, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  margin-bottom: 48px;
+}
+
+/* ============================================================
+   WORK GRID
+   Asymmetric: award card full-width, others in offset 2-col.
+   Not three equal cards. SKILL §9.C.
+   ============================================================ */
+
+.work-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Cards: elevation only where hierarchy demands it. SKILL §4.4 */
+.card {
+  background: var(--surface);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background-color 0.15s ease;
+}
+
+.card:hover {
+  background: var(--bg-subtle);
+}
+
+/* Tactile lift: subtle, not flashy. SKILL §4.5 */
+.card:hover .metric-value {
+  color: var(--accent);
+}
+
+/* Award card: spans full width, distinct visual treatment */
+.card-award {
+  grid-column: 1 / -1;
+  background: var(--accent-subtle);
+  border-bottom: 2px solid var(--border);
+}
+
+.card-award:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.card-award-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.card-award-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-award-badge {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 20px;
+  border: 1.5px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  min-width: 110px;
+}
+
+.badge-star {
+  font-size: 1.5rem;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.badge-text {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* .card-wide spans both columns */
+.card-wide {
+  grid-column: 1 / -1;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.card p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.card-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  transition: color 0.15s ease;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+/* ============================================================
+   CAPABILITIES
+   Pill chips instead of <ul> bullets for >5 items. SKILL §4.9.
+   ============================================================ */
+
+.caps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px 40px;
+}
+
+.cap-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  /* One eyebrow equivalent allowed per 3 sections - this is the only section with caps treatment. SKILL §4.7 */
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  cursor: default;
+}
+
+.pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+/* ============================================================
+   RECOGNITION
+   Asymmetric left/right layout. Different family from work grid.
+   ============================================================ */
+
+.rec-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.rec-award-block {
+  padding: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--accent-subtle);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.rec-award-label {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.rec-award-venue {
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.rec-award-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.rec-right {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding-top: 8px;
+}
+
+.rec-venues-label {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.venue-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.venue-chip {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+}
+
+.cert-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cert-list li {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding-left: 14px;
+  position: relative;
+}
+
+.cert-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ============================================================
+   EXPERIENCE
+   Timeline: different layout family from work and recognition.
+   ============================================================ */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.tl-item {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0 40px;
+  padding-block: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.tl-item:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.tl-when {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  padding-top: 3px;
+  line-height: 1.5;
+}
+
+.tl-body h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.tl-org {
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.tl-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.exp-footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.exp-footer span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.exp-footer strong {
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   CONTACT
+   Highest visual weight section. Single CTA intent throughout.
+   NOT a light section tint - dark panel within light theme is
+   intentional one-time device (SKILL §4.11 exception).
+   ============================================================ */
+
+.section-contact {
+  background: var(--text-primary);
+  padding-block: var(--section-py);
+}
+
+.contact-headline {
+  font-size: clamp(2rem, 4vw + 0.5rem, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #F0F0ED;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  max-width: 18ch;
+}
+
+.contact-sub {
+  font-size: 1rem;
+  color: rgba(240, 240, 237, 0.65);
+  line-height: 1.6;
+  max-width: 60ch;
+  margin-bottom: 36px;
+}
+
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Email as large styled text, not just a button */
+.contact-email {
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  font-weight: 500;
+  color: var(--accent-hover);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.contact-email:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.footer {
+  padding-block: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer-inner span,
+.footer-inner a {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.footer-inner a:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   Elements enter on viewport intersection.
+   Opacity + translateY only - no width/height animation. SKILL §6.A.
+   ============================================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger for sibling reveals */
+.reveal:nth-child(2) { transition-delay: 0.06s; }
+.reveal:nth-child(3) { transition-delay: 0.12s; }
+.reveal:nth-child(4) { transition-delay: 0.18s; }
+.reveal:nth-child(5) { transition-delay: 0.24s; }
+.reveal:nth-child(6) { transition-delay: 0.30s; }
+
+/* ============================================================
+   RESPONSIVE
+   Explicit mobile collapse per section. SKILL §3.E / §7.
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  :root {
+    --section-py: 72px;
+  }
+
+  .hero-inner {
+    gap: 48px;
+    padding-block: 60px 100px;
+  }
+
+  .caps-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --section-py: 60px;
+    --wrap-px: 20px;
+  }
+
+  /* Nav: show toggle, hide desktop links */
+  .nav-links {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: flex;
+  }
+
+  /* Hero: stack vertically */
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-block: 48px 80px;
+  }
+
+  .hero-headline {
+    font-size: clamp(2rem, 8vw, 2.75rem);
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Work: single column */
+  .work-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-award {
+    grid-column: 1;
+  }
+
+  .card-wide {
+    grid-column: 1;
+  }
+
+  .card-award-inner {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .card-award-badge {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+
+  /* Capabilities: two columns */
+  .caps-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  /* Recognition: stack */
+  .rec-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  /* Timeline: stack date above content */
+  .tl-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding-block: 24px;
+  }
+
+  .tl-when {
+    padding-top: 0;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-cell {
+    padding: 20px 16px;
+  }
+
+  .stat-n {
+    font-size: 1.75rem;
+  }
+
+  .contact-links {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
