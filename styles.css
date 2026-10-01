@@ -1433,32 +1433,19 @@ body.cursor-clicking .cursor-dot {
 
 /* ============================================================
    ROBOT COMPANION
-   Canvas is injected as position:absolute inside each active
-   section. Wide (full wrap width), short (robot height only).
-   Transparent background so heading text shows through beneath.
-   z-index above heading text so robot overlays it.
-   pointer-events:none — never blocks clicks.
+   All position/size set by JS (position:fixed, top, left, width, height).
+   CSS only provides the mobile hide rule.
+   z-index:35 via JS inline style — above page content, below nav (50).
    ============================================================ */
 
 #robot-canvas {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 100px;
+  /* Base rule — JS overrides position/size inline */
   pointer-events: none;
-  z-index: 10;
   display: block;
-  /* Canvas moves between sections — no transition on position */
-}
-
-/* Each heading needs position:relative so the canvas can
-   be positioned relative to it. Applied via JS. */
-.robot-heading-host {
-  position: relative;
 }
 
 @media (max-width: 1024px) {
-  #robot-canvas { display: none; }
+  #robot-canvas { display: none !important; }
 }
 
 

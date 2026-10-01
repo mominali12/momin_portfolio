@@ -302,30 +302,27 @@
   /* ─────────────────────────────────────────────
      8. ROBOT COMPANION  (Three.js r128 vanilla)
      ─────────────────────────────────────────────
-     Architecture — "walks across heading text":
+     Architecture (fixed canvas, correct this time):
 
-     One wide canvas (full content-column width × 100px tall),
-     absolutely positioned OVER each active section heading.
-     Canvas background is transparent → heading text visible beneath.
-     z-index:10 → robot overlays the heading text.
-     Robot X-position animated in Three.js world space.
+     Canvas is position:fixed, full-viewport-width × 110px tall.
+     It is always present in the DOM — no moving between sections.
+     JS repositions it (top/left via style) to overlap the active
+     heading. Because it is fixed, getBoundingClientRect() gives
+     exact screen coords at all times.
 
-     State machine:
-       HIDDEN      — canvas detached / off-left
-       WALK_IN     — robot walks from left edge to idle spot
-       IDLE        — robot standing, idle breathing animation
-       WALK_OUT    — robot walks right off canvas edge
-     Transitions are driven by IntersectionObserver (no raw scroll).
+     Robot walks in world X space. World ↔ screen mapping is
+     consistent because we use the same canvas and camera always.
 
-     Walk cycle (proper character animation):
-       Legs:  legL sin(walkT),  legR sin(walkT+π)  [opposite phase]
-       Arms:  armL sin(walkT+π), armR sin(walkT)   [opposite to leg]
-       Body:  bobs up |sin(walkT)| * 0.035 per step
-       Lean:  slight forward tilt when walking
-     All driven by one walkT accumulator, speed proportional to
-     actual X velocity so feet never slide.
+     State machine: HIDDEN → WALK_IN → IDLE → WALK_OUT → HIDDEN
+     Spring physics drive X position (critically damped spring).
+     Walk cycle drives legs/arms proportional to velocity.
 
-     Reduced motion: robot appears instantly, no walk cycle.
+     Bugs fixed vs previous version:
+       ✓ Canvas never moves in DOM (no offsetTop drift)
+       ✓ renderer.setSize() is the single source of truth for dimensions
+       ✓ leftEdge/idleX/rightEdge computed from fresh viewW after camera update
+       ✓ Canvas visible immediately (fixed positioning, always rendered)
+       ✓ detachCanvas actually hides the canvas
   ───────────────────────────────────────────── */
   (function initRobot() {
     if (window.innerWidth <= 1024) return;
@@ -333,44 +330,59 @@
     const canvas = document.getElementById('robot-canvas');
     if (!canvas) return;
 
-    const testCtx = canvas.getContext('webgl2') || canvas.getContext('webgl');
-    if (!testCtx) { canvas.style.display = 'none'; return; }
+    // WebGL check
+    const testGL = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    if (!testGL) { canvas.style.display = 'none'; return; }
 
     const THREE = window.THREE;
     if (!THREE) return;
 
-    // ── Canvas dimensions ─────────────────────────────────────
-    // Width: full wrap column (set dynamically when attached to heading)
-    // Height: fixed 100px — just enough for the robot character
-    const CH = 100;
-    let   CW = 800; // will be updated when attached
+    // ── Fixed canvas dimensions ───────────────────────────────
+    // Width: full viewport width so robot can walk across any heading
+    // Height: 110px — tall enough for robot + a little clearance
+    const CH = 110;
+    let   CW = window.innerWidth;
 
+    // Apply fixed positioning immediately so canvas is always in the right layer
+    Object.assign(canvas.style, {
+      position:      'fixed',
+      left:          '0',
+      top:           '-200px',   // parked off screen until first heading is active
+      width:         CW + 'px',
+      height:        CH + 'px',
+      pointerEvents: 'none',
+      zIndex:        '35',
+      display:       'block',
+    });
+
+    // ── Renderer ──────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0x000000, 0);  // fully transparent background
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(CW, CH);             // single source of truth for dimensions
 
     // ── Orthographic camera ───────────────────────────────────
-    // 1 world unit ≈ 1/scale of robot height
-    // Robot character is ~2.4 units tall at base scale
-    // We want it to fill ~70% of 100px → viewH tuned accordingly
+    // viewH = how many world units fit in CH pixels
+    // Robot is ~2.4 units tall at scale 0.78 → fills ~65% of 110px
     const scene = new THREE.Scene();
-    let viewH = 4.2;          // world-space height visible
-    let viewW = 4.2 * (CW / CH); // updated on resize
-    let camera = new THREE.OrthographicCamera(
-      -viewW/2, viewW/2, viewH/2, -viewH/2, 0.1, 50
+    const viewH = 4.5;
+    let   viewW = viewH * (CW / CH);
+
+    const camera = new THREE.OrthographicCamera(
+      -viewW / 2, viewW / 2, viewH / 2, -viewH / 2, 0.1, 50
     );
     camera.position.z = 10;
 
-    function updateCamera() {
+    function syncCamera() {
       viewW = viewH * (CW / CH);
-      camera.left   = -viewW/2;
-      camera.right  =  viewW/2;
-      camera.top    =  viewH/2;
-      camera.bottom = -viewH/2;
+      camera.left   = -viewW / 2;
+      camera.right   =  viewW / 2;
+      camera.top     =  viewH / 2;
+      camera.bottom  = -viewH / 2;
       camera.updateProjectionMatrix();
     }
 
-    // ── Accent color helper ───────────────────────────────────
+    // ── Accent color ──────────────────────────────────────────
     function getAccentHex() {
       const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
       return v.startsWith('#') ? v : '#2C6EAB';
@@ -384,36 +396,30 @@
     const matEye     = new THREE.MeshStandardMaterial({ color: 0xdcf0ff, roughness: 0.2 });
     const matBlush   = new THREE.MeshStandardMaterial({ color: 0xee7070, transparent: true, opacity: 0.42, roughness: 1.0 });
     const matSmile   = new THREE.MeshStandardMaterial({ color: 0xc8e8ff, roughness: 0.4 });
-
     const matAccent  = new THREE.MeshStandardMaterial({
-      color:    new THREE.Color(getAccentHex()),
-      emissive: new THREE.Color(getAccentHex()),
-      emissiveIntensity: 0.5,
-      roughness: 0.1, metalness: 0.4,
+      color: new THREE.Color(getAccentHex()), emissive: new THREE.Color(getAccentHex()),
+      emissiveIntensity: 0.5, roughness: 0.1, metalness: 0.4,
     });
-    const matPupil   = new THREE.MeshStandardMaterial({
-      color:    new THREE.Color(getAccentHex()),
-      emissive: new THREE.Color(getAccentHex()),
+    const matPupil = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(getAccentHex()), emissive: new THREE.Color(getAccentHex()),
       emissiveIntensity: 1.1, roughness: 0.0,
     });
 
     // ── Robot geometry ────────────────────────────────────────
-    // Scale: built at natural size, then robot.scale = 0.78
     const robot = new THREE.Group();
     scene.add(robot);
     robot.scale.setScalar(0.78);
 
-    // BODY
+    // Body
     const body = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.9, 0.52), matBody);
     robot.add(body);
 
     // Chest stripe
-    robot.add(Object.assign(
-      new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.14, 0.54), matAccent),
-      { position: new THREE.Vector3(0, 0.19, 0) }
-    ));
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.14, 0.54), matAccent);
+    stripe.position.set(0, 0.19, 0);
+    robot.add(stripe);
 
-    // Chest button pair
+    // Chest buttons
     const btnG = new THREE.CylinderGeometry(0.048, 0.048, 0.055, 8);
     [-0.14, 0.09].forEach(x => {
       const b = new THREE.Mesh(btnG, matAccent);
@@ -422,308 +428,219 @@
       robot.add(b);
     });
 
-    // HIPS
+    // Hips
     const hips = new THREE.Mesh(new THREE.BoxGeometry(0.70, 0.20, 0.46), matHip);
     hips.position.y = -0.57;
     robot.add(hips);
 
-    // LEGS — stored for walk animation
+    // Legs — pivot groups so rotation is from hip joint
     const legGeo  = new THREE.CylinderGeometry(0.13, 0.105, 0.40, 8);
-    const legPivL = new THREE.Group(); // pivot at hip joint
-    const legPivR = new THREE.Group();
-    legPivL.position.set(-0.19, -0.57, 0);
-    legPivR.position.set( 0.19, -0.57, 0);
-    robot.add(legPivL, legPivR);
+    const footGeo = new THREE.BoxGeometry(0.24, 0.12, 0.32);
+    const legPivL = new THREE.Group(); legPivL.position.set(-0.19, -0.57, 0); robot.add(legPivL);
+    const legPivR = new THREE.Group(); legPivR.position.set( 0.19, -0.57, 0); robot.add(legPivR);
+    [legPivL, legPivR].forEach(piv => {
+      const leg  = new THREE.Mesh(legGeo, matBody);  leg.position.y  = -0.20; piv.add(leg);
+      const foot = new THREE.Mesh(footGeo, matRim);  foot.position.set(0, -0.41, 0.04); piv.add(foot);
+    });
 
-    const legMeshL = new THREE.Mesh(legGeo, matBody);
-    const legMeshR = new THREE.Mesh(legGeo, matBody);
-    legMeshL.position.y = -0.20; // offset from pivot center
-    legMeshR.position.y = -0.20;
-    legPivL.add(legMeshL);
-    legPivR.add(legMeshR);
-
-    // Feet — children of leg pivots so they follow leg rotation
-    const footG = new THREE.BoxGeometry(0.24, 0.12, 0.32);
-    const footL = new THREE.Mesh(footG, matRim);
-    const footR = new THREE.Mesh(footG, matRim);
-    footL.position.set(0, -0.41, 0.04);
-    footR.position.set(0, -0.41, 0.04);
-    legPivL.add(footL);
-    legPivR.add(footR);
-
-    // ARMS — pivot at shoulder
+    // Arms — pivot groups from shoulder
     const armGeo  = new THREE.CylinderGeometry(0.082, 0.065, 0.36, 8);
-    const armPivL = new THREE.Group();
-    const armPivR = new THREE.Group();
-    armPivL.position.set(-0.56, 0.22, 0);
-    armPivR.position.set( 0.56, 0.22, 0);
-    robot.add(armPivL, armPivR);
+    const handGeo = new THREE.SphereGeometry(0.095, 8, 8);
+    const armPivL = new THREE.Group(); armPivL.position.set(-0.56, 0.22, 0); robot.add(armPivL);
+    const armPivR = new THREE.Group(); armPivR.position.set( 0.56, 0.22, 0); robot.add(armPivR);
+    [armPivL, armPivR].forEach(piv => {
+      const arm  = new THREE.Mesh(armGeo, matBody);  arm.position.y  = -0.18; piv.add(arm);
+      const hand = new THREE.Mesh(handGeo, matRim);  hand.position.y = -0.38; piv.add(hand);
+    });
 
-    const armMeshL = new THREE.Mesh(armGeo, matBody);
-    const armMeshR = new THREE.Mesh(armGeo, matBody);
-    armMeshL.position.y = -0.18;
-    armMeshR.position.y = -0.18;
-    armPivL.add(armMeshL);
-    armPivR.add(armMeshR);
+    // Head — pivot at neck for bob
+    const headPiv = new THREE.Group(); headPiv.position.y = 0.82; robot.add(headPiv);
+    headPiv.add(new THREE.Mesh(new THREE.BoxGeometry(1.02, 0.88, 0.76), matBody));
 
-    // Hands
-    const handG = new THREE.SphereGeometry(0.095, 8, 8);
-    const handL = new THREE.Mesh(handG, matRim);
-    const handR = new THREE.Mesh(handG, matRim);
-    handL.position.set(0, -0.38, 0);
-    handR.position.set(0, -0.38, 0);
-    armPivL.add(handL);
-    armPivR.add(handR);
-
-    // HEAD — larger pivot group so head bob works from neck
-    const headPiv = new THREE.Group();
-    headPiv.position.y = 0.82;
-    robot.add(headPiv);
-
-    const headMesh = new THREE.Mesh(new THREE.BoxGeometry(1.02, 0.88, 0.76), matBody);
-    headPiv.add(headMesh);
-
-    // Ear nubs
+    // Ears + ear rings
     const earG = new THREE.BoxGeometry(0.08, 0.30, 0.11);
-    const earMatDark = new THREE.MeshStandardMaterial({ color: 0x363c54, roughness: 0.5, metalness: 0.2 });
+    const earMatDark = new THREE.MeshStandardMaterial({ color: 0x363c54, roughness: 0.5 });
     [-0.55, 0.55].forEach(x => {
-      const ear = new THREE.Mesh(earG, earMatDark);
-      ear.position.set(x, 0, 0);
-      headPiv.add(ear);
-      // Ear ring
+      const ear = new THREE.Mesh(earG, earMatDark); ear.position.x = x; headPiv.add(ear);
       const ring = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.017, 6, 12), matAccent);
-      ring.position.set(x, 0, 0);
-      ring.rotation.y = Math.PI / 2;
-      headPiv.add(ring);
+      ring.position.x = x; ring.rotation.y = Math.PI / 2; headPiv.add(ring);
     });
 
-    // Visor frame
-    const visorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.80, 0.46, 0.038), matAccent);
-    visorFrame.position.set(0, 0.04, 0.40);
-    headPiv.add(visorFrame);
+    // Visor frame + screen
+    const vf = new THREE.Mesh(new THREE.BoxGeometry(0.80, 0.46, 0.038), matAccent);
+    vf.position.set(0, 0.04, 0.40); headPiv.add(vf);
+    const vs = new THREE.Mesh(new THREE.BoxGeometry(0.70, 0.37, 0.028), matVisorBg);
+    vs.position.set(0, 0.04, 0.425); headPiv.add(vs);
 
-    // Visor screen
-    const visorScreen = new THREE.Mesh(new THREE.BoxGeometry(0.70, 0.37, 0.028), matVisorBg);
-    visorScreen.position.set(0, 0.04, 0.425);
-    headPiv.add(visorScreen);
-
-    // Eyes (pairs)
-    const eyeG   = new THREE.CircleGeometry(0.072, 12);
-    const pupilG  = new THREE.CircleGeometry(0.038, 10);
-    [-0.165, 0.165].forEach((x, i) => {
-      const eye = new THREE.Mesh(eyeG, matEye);
-      eye.position.set(x, 0.07, 0.438);
-      headPiv.add(eye);
-      const pupil = new THREE.Mesh(pupilG, matPupil);
-      pupil.position.set(x, 0.07, 0.441);
-      headPiv.add(pupil);
+    // Eyes + pupils
+    [-0.165, 0.165].forEach(x => {
+      const eye = new THREE.Mesh(new THREE.CircleGeometry(0.072, 12), matEye);
+      eye.position.set(x, 0.07, 0.438); headPiv.add(eye);
+      const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.038, 10), matPupil);
+      pupil.position.set(x, 0.07, 0.441); headPiv.add(pupil);
     });
 
-    // Cheeks
-    const blushG = new THREE.CircleGeometry(0.065, 10);
+    // Cheeks + smile
     [-0.29, 0.29].forEach(x => {
-      const b = new THREE.Mesh(blushG, matBlush);
-      b.position.set(x, -0.09, 0.440);
-      headPiv.add(b);
+      const b = new THREE.Mesh(new THREE.CircleGeometry(0.065, 10), matBlush);
+      b.position.set(x, -0.09, 0.440); headPiv.add(b);
     });
+    const smile = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.017, 6, 12, Math.PI), matSmile);
+    smile.rotation.z = Math.PI; smile.position.set(0, -0.09, 0.440); headPiv.add(smile);
 
-    // Smile
-    const smileMesh = new THREE.Mesh(
-      new THREE.TorusGeometry(0.095, 0.017, 6, 12, Math.PI),
-      matSmile
-    );
-    smileMesh.rotation.z = Math.PI;
-    smileMesh.position.set(0, -0.09, 0.440);
-    headPiv.add(smileMesh);
-
-    // ANTENNA
-    const antennaPiv = new THREE.Group();
-    antennaPiv.position.set(0.09, 0.45, 0);
-    headPiv.add(antennaPiv);
-
+    // Antenna
+    const antPiv = new THREE.Group(); antPiv.position.set(0.09, 0.45, 0); headPiv.add(antPiv);
     const antStick = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.36, 8), matRim);
-    antStick.position.y = 0.18;
-    antennaPiv.add(antStick);
-
+    antStick.position.y = 0.18; antPiv.add(antStick);
     const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 8), matAccent);
-    antTip.position.y = 0.40;
-    antennaPiv.add(antTip);
+    antTip.position.y = 0.40; antPiv.add(antTip);
 
     // ── Lights ────────────────────────────────────────────────
     scene.add(new THREE.AmbientLight(0xffffff, 0.78));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
-    dirLight.position.set(2, 4, 5);
-    scene.add(dirLight);
-    // Soft fill from left
-    const fillLight = new THREE.DirectionalLight(0xd0e8ff, 0.25);
-    fillLight.position.set(-3, 1, 2);
-    scene.add(fillLight);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.85);
+    dir.position.set(2, 4, 5); scene.add(dir);
+    const fill = new THREE.DirectionalLight(0xd0e8ff, 0.25);
+    fill.position.set(-3, 1, 2); scene.add(fill);
 
-    // ── Initial robot position ────────────────────────────────
-    // Feet "floor" should be at Y = -viewH/2 + small margin
-    // Robot feet bottom ≈ -1.35 world units below robot.position.y at scale 0.78
-    // → robot.position.y = -viewH/2 + 1.35*0.78 + margin
-    function floorY() {
-      return -viewH/2 + 1.05 * 0.78 + 0.1;
-    }
-    robot.position.y = floorY();
-    robot.position.z = 0;
+    // ── World-space helpers ───────────────────────────────────
+    // Robot "floor": bottom of canvas in world = -viewH/2
+    // Robot feet hang ~(0.41+0.06)*0.78 ≈ 0.37 below robot.position.y
+    // So robot.position.y = -viewH/2 + 0.37 + small margin
+    const ROBOT_FEET_OFFSET = 0.37; // world units from robot Y to foot bottom
+    const FLOOR_MARGIN      = 0.12;
+    const FLOOR_Y = -viewH / 2 + ROBOT_FEET_OFFSET + FLOOR_MARGIN;
+
+    robot.position.set(0, FLOOR_Y, 0);
+
+    // X positions — computed fresh after syncCamera()
+    // leftEdge: 1 unit past left edge of canvas (off-screen)
+    // idleX: just inside left side, about 1.3 world units in
+    // rightEdge: 1 unit past right edge
+    function leftEdge()  { return -viewW / 2 - 1.2; }
+    function idleX()     { return -viewW / 2 + 1.5; }
+    function rightEdge() { return  viewW / 2 + 1.2; }
 
     // ── State machine ─────────────────────────────────────────
     const STATE = { HIDDEN: 0, WALK_IN: 1, IDLE: 2, WALK_OUT: 3 };
-    let state    = STATE.HIDDEN;
+    let state = STATE.HIDDEN;
 
-    // World-space X positions
-    // Left edge of canvas in world space = -viewW/2
-    // Robot starts just off the left edge
-    function leftEdge()  { return -viewW/2 - 1.0; } // start: off left
-    function idleX()     { return -viewW/2 + 1.4;  } // rest: 1.4 units in from left
-    function rightEdge() { return  viewW/2 + 1.0;  } // walk-out target: off right
+    // ── Spring physics ────────────────────────────────────────
+    let currentX = leftEdge();
+    let targetX  = leftEdge();
+    let velX     = 0;
+    robot.position.x = currentX;
 
-    robot.position.x = leftEdge(); // hidden initially
-
-    // ── Walk cycle state ──────────────────────────────────────
-    let walkT      = 0;    // ever-accumulating phase (radians * time)
-    let walkSpeed  = 0;    // current world-units/sec horizontal speed
-    let targetX    = leftEdge(); // where we're heading
-    let currentX   = leftEdge();
-
-    // Walk cycle amplitude
-    const LEG_AMP  = 0.38; // max leg rotation (radians)
-    const ARM_AMP  = 0.28; // max arm rotation
-    const HEAD_BOB = 0.028; // head Y offset per step
-
-    // Spring for smooth X movement (critically damped spring)
-    // dx_dt tracked for natural deceleration
-    let velX = 0;
-    const SPRING_K   = 18;  // stiffness
-    const SPRING_D   = 7;   // damping (critically damped ~= 2*sqrt(k))
+    const SPRING_K = 16; // stiffness
+    const SPRING_D =  7; // damping (near-critical: 2*sqrt(16)=8)
 
     function springStep(dt) {
-      const force = SPRING_K * (targetX - currentX) - SPRING_D * velX;
-      velX    += force * dt;
-      currentX += velX  * dt;
-      walkSpeed = Math.abs(velX);
+      const f = SPRING_K * (targetX - currentX) - SPRING_D * velX;
+      velX     += f * dt;
+      currentX += velX * dt;
     }
 
-    // ── Idle breathing state ──────────────────────────────────
-    let idleT = 0;
+    // ── Walk cycle ────────────────────────────────────────────
+    let walkT = 0;
+    const LEG_AMP  = 0.40;
+    const ARM_AMP  = 0.30;
+    const HEAD_BOB = 0.03;
 
-    // ── Heading targets ───────────────────────────────────────
+    // ── Canvas visibility ─────────────────────────────────────
+    // Park canvas off-screen when hidden (avoids layout issues)
+    function hideCanvas()  { canvas.style.top = '-300px'; }
+    function showCanvas(screenTop) {
+      // screenTop: pixels from top of viewport where canvas top edge should be
+      canvas.style.top = Math.round(screenTop) + 'px';
+    }
+
+    // ── Active heading tracking ───────────────────────────────
+    let activeEl = null;
+
+    function positionCanvasAtHeading(headingEl) {
+      const rect = headingEl.getBoundingClientRect();
+      // We want robot feet to stand on the heading's top edge.
+      // Canvas bottom = heading top, so canvas top = heading top - CH.
+      // Or: center canvas on heading vertically for the "walks on text" feel.
+      // "Walks on top of text" → canvas bottom aligns with heading bottom edge,
+      // so robot feet are on the bottom of the heading text line.
+      const canvasTop = rect.bottom - CH + 10; // 10px overlap so feet touch text top
+      showCanvas(canvasTop);
+    }
+
+    // ── Transitions ───────────────────────────────────────────
+    function startWalkIn(el) {
+      activeEl = el;
+      positionCanvasAtHeading(el);
+      // Reset to left edge — robot enters from left
+      currentX = leftEdge();
+      velX     = 0;
+      robot.position.x = currentX;
+      targetX  = idleX();
+      state    = STATE.WALK_IN;
+      robot.rotation.y = -0.12; // face right (into content)
+    }
+
+    function startWalkOut() {
+      targetX = rightEdge();
+      state   = STATE.WALK_OUT;
+      robot.rotation.y = -0.12;
+    }
+
+    function arrivedIdle() {
+      state    = STATE.IDLE;
+      targetX  = idleX();
+      velX     = 0;
+      currentX = idleX();
+      robot.position.x = currentX;
+      robot.rotation.y = 0.14; // face viewer
+    }
+
+    function arrivedHidden() {
+      state    = STATE.HIDDEN;
+      velX     = 0;
+      currentX = leftEdge();
+      robot.position.x = currentX;
+      hideCanvas();
+      activeEl = null;
+    }
+
+    // ── IntersectionObserver ──────────────────────────────────
     const headingIds = [
       'heading-hero', 'heading-work', 'heading-capabilities',
       'heading-recognition', 'heading-experience', 'heading-contact'
     ];
 
-    // Map each heading el → its host section/header element
-    function getHostSection(headingEl) {
-      // Walk up to the nearest section or header
-      let el = headingEl.parentElement;
-      while (el && el !== document.body) {
-        if (el.tagName === 'SECTION' || el.tagName === 'HEADER') return el;
-        el = el.parentElement;
-      }
-      return headingEl.parentElement;
-    }
-
-    // ── Attach canvas over a heading ──────────────────────────
-    // Canvas is absolutely positioned inside the heading's .wrap div
-    // positioned so its bottom edge aligns with the heading's bottom
-    let activeHeadingEl   = null;
-    let activeWrapEl      = null;
-
-    function attachToHeading(headingEl) {
-      if (activeHeadingEl === headingEl) return;
-
-      // Find the .wrap container inside the section
-      const section = getHostSection(headingEl);
-      const wrapEl  = section.querySelector('.wrap') || section;
-      activeWrapEl  = wrapEl;
-      activeHeadingEl = headingEl;
-
-      // Make wrap position:relative so canvas absolute works
-      wrapEl.style.position = 'relative';
-
-      // Canvas width = wrap width
-      const wrapRect    = wrapEl.getBoundingClientRect();
-      CW                = wrapRect.width;
-      canvas.width      = CW * Math.min(window.devicePixelRatio, 2);
-      canvas.height     = CH * Math.min(window.devicePixelRatio, 2);
-      canvas.style.width  = CW + 'px';
-      canvas.style.height = CH + 'px';
-      renderer.setSize(CW, CH);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      updateCamera();
-
-      // Position canvas: top = heading's offsetTop - (canvas_height - heading_height) / 2
-      // So robot feet rest on the top of the heading text
-      const headingOffsetTop = headingEl.offsetTop;
-      const headingH         = headingEl.offsetHeight;
-      // Robot feet bottom world Y = floorY() * scale ≈ -viewH/2 * (CH/viewH_px_ratio)
-      // We want feet to align with heading top edge → canvas bottom = heading top
-      canvas.style.top  = (headingOffsetTop - CH + headingH * 0.55) + 'px';
-      canvas.style.left = '0px';
-
-      // Move canvas into this wrap (removes from previous parent automatically)
-      wrapEl.appendChild(canvas);
-    }
-
-    function detachCanvas() {
-      if (canvas.parentElement && canvas.parentElement !== document.body) {
-        // Don't remove — just reset active tracking
-      }
-      activeHeadingEl = null;
-    }
-
-    // ── Transition helpers ────────────────────────────────────
-    function startWalkIn(headingEl) {
-      attachToHeading(headingEl);
-      robot.position.x = leftEdge();
-      currentX         = leftEdge();
-      velX             = 0;
-      targetX          = idleX();
-      state            = STATE.WALK_IN;
-      // Face right (walking toward content)
-      robot.rotation.y = -0.15;
-    }
-
-    function startWalkOut() {
-      targetX  = rightEdge();
-      state    = STATE.WALK_OUT;
-      robot.rotation.y = -0.15; // still facing right
-    }
-
-    function goIdle() {
-      state = STATE.IDLE;
-      targetX  = idleX();
-      // Robot settles, faces viewer slightly
-      robot.rotation.y = 0.12;
-    }
-
-    // ── IntersectionObserver ──────────────────────────────────
-    // Fires when heading enters/leaves a wide central band of viewport
-    const headingObs = new IntersectionObserver(entries => {
+    const obs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         const el = entry.target;
         if (entry.isIntersecting) {
-          if (state === STATE.HIDDEN || activeHeadingEl !== el) {
-            startWalkIn(el);
-          }
+          // New heading visible: walk in (even if already idle somewhere else)
+          startWalkIn(el);
         } else {
-          if (activeHeadingEl === el && state !== STATE.HIDDEN) {
+          if (activeEl === el && state !== STATE.HIDDEN) {
             startWalkOut();
           }
         }
       });
-    }, {
-      rootMargin: '-5% 0px -30% 0px',
-      threshold:   0,
-    });
+    }, { rootMargin: '-5% 0px -25% 0px', threshold: 0 });
 
     headingIds.forEach(id => {
       const el = document.getElementById(id);
-      if (el) headingObs.observe(el);
+      if (el) obs.observe(el);
     });
+
+    // ── Update canvas position on scroll ─────────────────────
+    // The canvas is fixed but the heading scrolls, so we need to
+    // keep recomputing getBoundingClientRect() while active
+    let scrollTick = false;
+    document.addEventListener('scroll', () => {
+      if (scrollTick) return;
+      scrollTick = true;
+      requestAnimationFrame(() => {
+        if (activeEl && state !== STATE.HIDDEN) positionCanvasAtHeading(activeEl);
+        scrollTick = false;
+      });
+    }, { passive: true });
 
     // ── Theme change ──────────────────────────────────────────
     document.addEventListener('themechange', () => {
@@ -735,6 +652,7 @@
     });
 
     // ── Render loop ───────────────────────────────────────────
+    let idleT   = 0;
     let lastNow = performance.now();
     let rafId;
 
@@ -744,113 +662,90 @@
       lastNow  = now;
       idleT   += dt;
 
+      // Reduced motion: instant transitions, no walk cycle
       if (reducedMotion) {
-        // Reduced motion: snap to idle position, no animation
-        if (state === STATE.WALK_IN) {
-          robot.position.x = idleX();
-          currentX = idleX();
-          goIdle();
-        } else if (state === STATE.WALK_OUT) {
-          state = STATE.HIDDEN;
-          detachCanvas();
-        }
+        if (state === STATE.WALK_IN)  { arrivedIdle();   }
+        if (state === STATE.WALK_OUT) { arrivedHidden(); }
         renderer.render(scene, camera);
         return;
       }
 
-      // ── Spring physics for X position ──────────────────────
+      // ── Spring step ───────────────────────────────────────
       springStep(dt);
       robot.position.x = currentX;
-      robot.position.y = floorY();
 
-      // ── State transitions ───────────────────────────────────
-      const arrivedAtIdle  = state === STATE.WALK_IN  && Math.abs(currentX - idleX())    < 0.08 && Math.abs(velX) < 0.1;
-      const arrivedAtRight = state === STATE.WALK_OUT && currentX > rightEdge() - 0.15;
-
-      if (arrivedAtIdle) {
-        goIdle();
-        velX = 0;
-        currentX = idleX();
-        robot.position.x = idleX();
+      // ── State transitions ─────────────────────────────────
+      if (state === STATE.WALK_IN) {
+        const close = Math.abs(currentX - idleX()) < 0.12 && Math.abs(velX) < 0.15;
+        if (close) arrivedIdle();
       }
-      if (arrivedAtRight) {
-        state = STATE.HIDDEN;
-        velX  = 0;
-        robot.position.x = leftEdge();
-        currentX = leftEdge();
-        detachCanvas();
+      if (state === STATE.WALK_OUT) {
+        if (currentX > rightEdge() - 0.2) arrivedHidden();
       }
 
-      // ── Walk cycle (runs whenever moving significantly) ─────
-      const isWalking = Math.abs(velX) > 0.05;
-      if (isWalking) {
-        // walkT advances proportional to |velocity| so feet don't slide
-        walkT += dt * Math.abs(velX) * 3.2;
-      }
+      // ── Walk cycle ────────────────────────────────────────
+      const isWalking = Math.abs(velX) > 0.08;
+      if (isWalking) walkT += dt * Math.abs(velX) * 3.0;
 
-      const legSwing    = isWalking ? LEG_AMP * Math.sin(walkT) : 0;
-      const armSwing    = isWalking ? ARM_AMP * Math.sin(walkT) : 0;
-      const bodyBob     = isWalking ? Math.abs(Math.sin(walkT)) * HEAD_BOB : 0;
+      const legSwing = isWalking ? LEG_AMP * Math.sin(walkT) : 0;
+      const armSwing = isWalking ? ARM_AMP * Math.sin(walkT) : 0;
+      const bob      = isWalking ? Math.abs(Math.sin(walkT)) * HEAD_BOB : 0;
 
       // Legs: opposite phase
       legPivL.rotation.x =  legSwing;
       legPivR.rotation.x = -legSwing;
-
-      // Arms: opposite to same-side leg (natural walking)
-      armPivL.rotation.x = -armSwing; // left arm forward when right leg forward
+      // Arms: contra-lateral (opposite to same-side leg)
+      armPivL.rotation.x = -armSwing;
       armPivR.rotation.x =  armSwing;
+      // Body rises on each step
+      body.position.y = bob;
 
-      // Body bobs up on each step
-      body.position.y = bodyBob;
-
-      // ── Idle animation (when not walking) ──────────────────
+      // ── Idle / walk animations ────────────────────────────
       if (!isWalking) {
         // Gentle head tilt
-        headPiv.rotation.z = Math.sin(idleT * 0.9) * 0.042;
-        // Head bob (independent of walk)
-        headPiv.position.y = 0.82 + Math.sin(idleT * 1.6) * 0.018;
-        // Antenna sway, slight lag behind head
-        antennaPiv.rotation.z = Math.sin(idleT * 0.9 + 0.5) * 0.10;
-        // Arms gentle swing
-        armPivL.rotation.x = Math.sin(idleT * 0.9) * 0.05;
-        armPivR.rotation.x = Math.sin(idleT * 0.9 + Math.PI) * 0.05;
-        // Very slight body lean
-        robot.rotation.y = 0.12 + Math.sin(idleT * 0.55) * 0.04;
+        headPiv.rotation.z   = Math.sin(idleT * 0.85) * 0.04;
+        headPiv.position.y   = 0.82 + Math.sin(idleT * 1.5) * 0.016;
+        // Antenna sway
+        antPiv.rotation.z    = Math.sin(idleT * 0.85 + 0.5) * 0.09;
+        // Arms breathe
+        armPivL.rotation.x   =  Math.sin(idleT * 0.85) * 0.045;
+        armPivR.rotation.x   = -Math.sin(idleT * 0.85) * 0.045;
+        // Subtle body sway
+        robot.rotation.y     = 0.14 + Math.sin(idleT * 0.5) * 0.035;
+        robot.rotation.x     = 0;
       } else {
-        // While walking: head stays relatively stable (looks determined)
-        headPiv.rotation.z   = Math.sin(walkT * 0.5) * 0.02;
-        headPiv.position.y   = 0.82 + bodyBob;
-        antennaPiv.rotation.z = Math.sin(walkT + 0.3) * 0.15;
-        // Slight forward lean when walking
-        robot.rotation.x = -0.06;
+        // Walking: head relatively steady, slight lean forward
+        headPiv.rotation.z   = Math.sin(walkT * 0.5) * 0.018;
+        headPiv.position.y   = 0.82 + bob * 0.6;
+        antPiv.rotation.z    = Math.sin(walkT + 0.3) * 0.14;
+        robot.rotation.x     = -0.055; // lean forward
       }
 
-      // ── Visor/pupil glow pulse (always on) ─────────────────
-      matAccent.emissiveIntensity = 0.42 + 0.18 * Math.sin(idleT * 2.2);
-      matPupil.emissiveIntensity  = 0.80 + 0.28 * Math.sin(idleT * 2.2 + 0.9);
+      // Visor glow always pulses
+      matAccent.emissiveIntensity = 0.42 + 0.18 * Math.sin(idleT * 2.1);
+      matPupil.emissiveIntensity  = 0.80 + 0.28 * Math.sin(idleT * 2.1 + 0.9);
 
       renderer.render(scene, camera);
     }
     requestAnimationFrame(render);
 
-    // ── Resize handler ────────────────────────────────────────
+    // ── Resize ────────────────────────────────────────────────
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        if (activeWrapEl) {
-          const wr = activeWrapEl.getBoundingClientRect();
-          CW = wr.width;
-          canvas.style.width = CW + 'px';
-          renderer.setSize(CW, CH);
-          updateCamera();
-        }
+        CW = window.innerWidth;
+        canvas.style.width = CW + 'px';
+        renderer.setSize(CW, CH);
+        syncCamera();
+        // Reposition if active
+        if (activeEl && state !== STATE.HIDDEN) positionCanvasAtHeading(activeEl);
       }, 150);
     }, { passive: true });
 
     window.addEventListener('unload', () => {
       cancelAnimationFrame(rafId);
-      headingObs.disconnect();
+      obs.disconnect();
     }, { once: true });
   }());
 
