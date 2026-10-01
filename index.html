@@ -566,12 +566,11 @@
 
 <!-- Three.js r128 UMD build — allowed CDN per publishing rules -->
 
-<!-- ROBOT COMPANION: small canvas that peeks from behind each section heading.
-     The wrap is positioned absolutely (via JS) next to the active heading.
-     overflow:hidden on the wrap creates the "peek from behind" clip. -->
-<div id="robot-wrap" aria-hidden="true" style="position:fixed;left:0;top:0;width:72px;height:88px;pointer-events:none;z-index:35;overflow:hidden;transform:translateX(-80px);">
-  <canvas id="robot-canvas" style="width:72px;height:88px;display:block;"></canvas>
-</div>
+
+<!-- ROBOT COMPANION: canvas moved by JS between section headings.
+     Transparent bg, z-index above text, pointer-events:none.
+     aria-hidden: decorative, screen readers skip it. -->
+<canvas id="robot-canvas" aria-hidden="true"></canvas>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="main.js"></script>
