@@ -1,32 +1,21 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "redirects": [
+  "rewrites": [
     {
       "source": "/",
       "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "DE" }],
-      "destination": "/de",
-      "permanent": false
+      "destination": "/de/index.html"
     },
     {
       "source": "/",
       "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "AT" }],
-      "destination": "/de",
-      "permanent": false
+      "destination": "/de/index.html"
     },
     {
       "source": "/",
       "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "CH" }],
-      "destination": "/de",
-      "permanent": false
+      "destination": "/de/index.html"
     },
-    {
-      "source": "/",
-      "destination": "/en",
-      "permanent": false
-    }
-  ],
-  "rewrites": [
+    { "source": "/",   "destination": "/en/index.html" },
     { "source": "/en", "destination": "/en/index.html" },
     { "source": "/de", "destination": "/de/index.html" }
   ],
