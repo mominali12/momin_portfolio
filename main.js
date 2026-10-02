@@ -325,12 +325,12 @@
        ✓ detachCanvas actually hides the canvas
   ───────────────────────────────────────────── */
   (function initRobot() {
-    // WebGL robot: desktop only (>1024px). Mobile uses 2D canvas instead.
-    const isMobileSize = window.innerWidth <= 1024;
-    if (isMobileSize) return;
-
+    // WebGL robot: skip if the canvas is hidden by CSS (i.e. on mobile).
+    // CSS sets display:none on #robot-canvas at ≤1024px.
+    // We check computed style rather than viewport width to be reliable.
     const canvas = document.getElementById('robot-canvas');
     if (!canvas) return;
+    if (getComputedStyle(canvas).display === 'none') return;
 
     // WebGL check
     const testGL = canvas.getContext('webgl2') || canvas.getContext('webgl');
@@ -339,33 +339,30 @@
     const THREE = window.THREE;
     if (!THREE) return;
 
-    // ── Fixed canvas dimensions ───────────────────────────────
-    // Width: full viewport width so robot can walk across any heading
-    // Height: 110px — tall enough for robot + a little clearance
-    const CH = 110;
-    let   CW = window.innerWidth;
+    // ── Canvas: small fixed bottom-right corner ─────────────
+    const CW = 80, CH = 100;
 
-    // Apply fixed positioning immediately so canvas is always in the right layer
     Object.assign(canvas.style, {
       position:      'fixed',
-      left:          '0',
-      top:           '-200px',   // parked off screen until first heading is active
+      bottom:        '80px',
+      right:         '16px',
+      top:           'auto',
+      left:          'auto',
       width:         CW + 'px',
       height:        CH + 'px',
-      pointerEvents: 'none',
+      pointerEvents: 'auto',
+      cursor:        'pointer',
       zIndex:        '35',
       display:       'block',
     });
 
     // ── Renderer ──────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setClearColor(0x000000, 0);  // fully transparent background
+    renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(CW, CH);             // single source of truth for dimensions
+    renderer.setSize(CW, CH);
 
     // ── Orthographic camera ───────────────────────────────────
-    // viewH = how many world units fit in CH pixels
-    // Robot is ~2.4 units tall at scale 0.78 → fills ~65% of 110px
     const scene = new THREE.Scene();
     const viewH = 4.5;
     let   viewW = viewH * (CW / CH);
@@ -504,145 +501,10 @@
     const fill = new THREE.DirectionalLight(0xd0e8ff, 0.25);
     fill.position.set(-3, 1, 2); scene.add(fill);
 
-    // ── World-space helpers ───────────────────────────────────
-    // Robot "floor": bottom of canvas in world = -viewH/2
-    // Robot feet hang ~(0.41+0.06)*0.78 ≈ 0.37 below robot.position.y
-    // So robot.position.y = -viewH/2 + 0.37 + small margin
-    const ROBOT_FEET_OFFSET = 0.37; // world units from robot Y to foot bottom
-    const FLOOR_MARGIN      = 0.12;
-    const FLOOR_Y = -viewH / 2 + ROBOT_FEET_OFFSET + FLOOR_MARGIN;
-
+    // ── Robot always visible, centred, at bottom-right ─────────
+    const FLOOR_Y = -viewH / 2 + 0.37 + 0.12;
     robot.position.set(0, FLOOR_Y, 0);
-
-    // X positions — computed fresh after syncCamera()
-    // leftEdge: 1 unit past left edge of canvas (off-screen)
-    // idleX: just inside left side, about 1.3 world units in
-    // rightEdge: 1 unit past right edge
-    function leftEdge()  { return -viewW / 2 - 1.2; }
-    function idleX()     { return -viewW / 2 + 1.5; }
-    function rightEdge() { return  viewW / 2 + 1.2; }
-
-    // ── State machine ─────────────────────────────────────────
-    const STATE = { HIDDEN: 0, WALK_IN: 1, IDLE: 2, WALK_OUT: 3 };
-    let state = STATE.HIDDEN;
-
-    // ── Spring physics ────────────────────────────────────────
-    let currentX = leftEdge();
-    let targetX  = leftEdge();
-    let velX     = 0;
-    robot.position.x = currentX;
-
-    const SPRING_K = 16; // stiffness
-    const SPRING_D =  7; // damping (near-critical: 2*sqrt(16)=8)
-
-    function springStep(dt) {
-      const f = SPRING_K * (targetX - currentX) - SPRING_D * velX;
-      velX     += f * dt;
-      currentX += velX * dt;
-    }
-
-    // ── Walk cycle ────────────────────────────────────────────
-    let walkT = 0;
-    const LEG_AMP  = 0.40;
-    const ARM_AMP  = 0.30;
-    const HEAD_BOB = 0.03;
-
-    // ── Canvas visibility ─────────────────────────────────────
-    // Park canvas off-screen when hidden (avoids layout issues)
-    function hideCanvas()  { canvas.style.top = '-300px'; }
-    function showCanvas(screenTop) {
-      // screenTop: pixels from top of viewport where canvas top edge should be
-      canvas.style.top = Math.round(screenTop) + 'px';
-    }
-
-    // ── Active heading tracking ───────────────────────────────
-    let activeEl = null;
-
-    function positionCanvasAtHeading(headingEl) {
-      const rect = headingEl.getBoundingClientRect();
-      // We want robot feet to stand on the heading's top edge.
-      // Canvas bottom = heading top, so canvas top = heading top - CH.
-      // Or: center canvas on heading vertically for the "walks on text" feel.
-      // "Walks on top of text" → canvas bottom aligns with heading bottom edge,
-      // so robot feet are on the bottom of the heading text line.
-      const canvasTop = rect.bottom - CH + 10; // 10px overlap so feet touch text top
-      showCanvas(canvasTop);
-    }
-
-    // ── Transitions ───────────────────────────────────────────
-    function startWalkIn(el) {
-      activeEl = el;
-      positionCanvasAtHeading(el);
-      // Reset to left edge — robot enters from left
-      currentX = leftEdge();
-      velX     = 0;
-      robot.position.x = currentX;
-      targetX  = idleX();
-      state    = STATE.WALK_IN;
-      robot.rotation.y = -0.12; // face right (into content)
-    }
-
-    function startWalkOut() {
-      targetX = rightEdge();
-      state   = STATE.WALK_OUT;
-      robot.rotation.y = -0.12;
-    }
-
-    function arrivedIdle() {
-      state    = STATE.IDLE;
-      targetX  = idleX();
-      velX     = 0;
-      currentX = idleX();
-      robot.position.x = currentX;
-      robot.rotation.y = 0.14; // face viewer
-    }
-
-    function arrivedHidden() {
-      state    = STATE.HIDDEN;
-      velX     = 0;
-      currentX = leftEdge();
-      robot.position.x = currentX;
-      hideCanvas();
-      activeEl = null;
-    }
-
-    // ── IntersectionObserver ──────────────────────────────────
-    const headingIds = [
-      'heading-hero', 'heading-work', 'heading-capabilities',
-      'heading-recognition', 'heading-experience', 'heading-contact'
-    ];
-
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        const el = entry.target;
-        if (entry.isIntersecting) {
-          // New heading visible: walk in (even if already idle somewhere else)
-          startWalkIn(el);
-        } else {
-          if (activeEl === el && state !== STATE.HIDDEN) {
-            startWalkOut();
-          }
-        }
-      });
-    }, { rootMargin: '-5% 0px -25% 0px', threshold: 0 });
-
-    headingIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) obs.observe(el);
-    });
-
-    // ── Update canvas position on scroll ─────────────────────
-    // The canvas is fixed but the heading scrolls, so we need to
-    // keep recomputing getBoundingClientRect() while active
-    let scrollTick = false;
-    document.addEventListener('scroll', () => {
-      if (scrollTick) return;
-      scrollTick = true;
-      requestAnimationFrame(() => {
-        if (activeEl && state !== STATE.HIDDEN) positionCanvasAtHeading(activeEl);
-        scrollTick = false;
-      });
-    }, { passive: true });
+    robot.rotation.y = 0.14; // slight angle toward viewer
 
     // ── Pointer tracking for head look-at ────────────────────
     // Mouse position in viewport pixels; converted to world space in render loop.
@@ -682,43 +544,8 @@
       lastNow  = now;
       idleT   += dt;
 
-      // Reduced motion: instant transitions, no walk cycle
-      if (reducedMotion) {
-        if (state === STATE.WALK_IN)  { arrivedIdle();   }
-        if (state === STATE.WALK_OUT) { arrivedHidden(); }
-        renderer.render(scene, camera);
-        return;
-      }
-
-      // ── Spring step ───────────────────────────────────────
-      springStep(dt);
-      robot.position.x = currentX;
-
-      // ── State transitions ─────────────────────────────────
-      if (state === STATE.WALK_IN) {
-        const close = Math.abs(currentX - idleX()) < 0.12 && Math.abs(velX) < 0.15;
-        if (close) arrivedIdle();
-      }
-      if (state === STATE.WALK_OUT) {
-        if (currentX > rightEdge() - 0.2) arrivedHidden();
-      }
-
-      // ── Walk cycle ────────────────────────────────────────
-      const isWalking = Math.abs(velX) > 0.08;
-      if (isWalking) walkT += dt * Math.abs(velX) * 3.0;
-
-      const legSwing = isWalking ? LEG_AMP * Math.sin(walkT) : 0;
-      const armSwing = isWalking ? ARM_AMP * Math.sin(walkT) : 0;
-      const bob      = isWalking ? Math.abs(Math.sin(walkT)) * HEAD_BOB : 0;
-
-      // Legs: opposite phase
-      legPivL.rotation.x =  legSwing;
-      legPivR.rotation.x = -legSwing;
-      // Arms: contra-lateral (opposite to same-side leg)
-      armPivL.rotation.x = -armSwing;
-      armPivR.rotation.x =  armSwing;
-      // Body rises on each step
-      body.position.y = bob;
+      if (reducedMotion) { renderer.render(scene, camera); return; }
+      const isWalking = false; // stationary at bottom-right corner
 
       // ── Idle / walk animations ────────────────────────────
       // ── Head look-at pointer (always, walking or idle) ──────
@@ -731,11 +558,16 @@
       // Convert mouse/touch viewport position to world space,
       // then rotate headPiv toward it. Runs every frame, walking or idle.
       {
-        const canvasTop  = parseFloat(canvas.style.top) || 0;
+        // Canvas is fixed bottom-right — use getBoundingClientRect for screen coords
+        const rect = canvas.getBoundingClientRect();
 
-        // Pointer in world space (orthographic: linear mapping)
-        const worldPX = ((pointerVX / CW) - 0.5) * viewW;
-        const worldPY = (0.5 - (pointerVY - canvasTop) / CH) * viewH;
+        // Convert pointer position to canvas-local coords (0..CW, 0..CH)
+        const localX = pointerVX - rect.left;
+        const localY = pointerVY - rect.top;
+
+        // Map canvas pixels to world space (orthographic camera)
+        const worldPX = ((localX / CW) - 0.5) * viewW;
+        const worldPY = (0.5 - (localY / CH)) * viewH;
 
         // Head center in world space
         const headWorldX = robot.position.x;
@@ -744,41 +576,25 @@
         const dx = worldPX - headWorldX;
         const dy = worldPY - headWorldY;
 
-        // Compute yaw (left-right) and pitch (up-down).
-        // Divisor controls sensitivity: smaller = more reactive.
-        // 2.5 gives a natural range across the full screen width.
+        // atan2 with small divisor = sensitive tracking
         const rawYaw   = Math.atan2(dx, 2.5);
-        const rawPitch = Math.atan2(-dy, 2.5);
+        const rawPitch = Math.atan2(-dy, 2.5); // negate: screen Y is flipped vs world Y
 
-        // Clamp so neck doesn't snap to extremes
         const targetYaw   = Math.max(-0.6, Math.min(0.6, rawYaw));
         const targetPitch = Math.max(-0.3, Math.min(0.3, rawPitch));
 
-        // Smooth lerp — faster when idle, slightly slower while walking
-        const lerpSpeed = isWalking ? 0.08 : 0.12;
-        headPiv.rotation.y += (targetYaw   - headPiv.rotation.y) * lerpSpeed;
-        headPiv.rotation.x += (targetPitch - headPiv.rotation.x) * lerpSpeed;
+        headPiv.rotation.y += (targetYaw   - headPiv.rotation.y) * 0.12;
+        headPiv.rotation.x += (targetPitch - headPiv.rotation.x) * 0.12;
       }
 
-      if (!isWalking) {
-        // Gentle head tilt (z-axis, layered on top of look-at y/x)
-        headPiv.rotation.z   = Math.sin(idleT * 0.85) * 0.04;
-        headPiv.position.y   = 0.82 + Math.sin(idleT * 1.5) * 0.016;
-        // Antenna sway
-        antPiv.rotation.z    = Math.sin(idleT * 0.85 + 0.5) * 0.09;
-        // Arms breathe
-        armPivL.rotation.x   =  Math.sin(idleT * 0.85) * 0.045;
-        armPivR.rotation.x   = -Math.sin(idleT * 0.85) * 0.045;
-        // Subtle body sway
-        robot.rotation.y     = 0.14 + Math.sin(idleT * 0.5) * 0.035;
-        robot.rotation.x     = 0;
-      } else {
-        // Walking: head relatively steady, slight lean forward
-        headPiv.rotation.z   = Math.sin(walkT * 0.5) * 0.018;
-        headPiv.position.y   = 0.82 + bob * 0.6;
-        antPiv.rotation.z    = Math.sin(walkT + 0.3) * 0.14;
-        robot.rotation.x     = -0.055; // lean forward
-      }
+      // Idle animation — always active
+      headPiv.rotation.z = Math.sin(idleT * 0.85) * 0.04;
+      headPiv.position.y = 0.82 + Math.sin(idleT * 1.5) * 0.016;
+      antPiv.rotation.z  = Math.sin(idleT * 0.85 + 0.5) * 0.09;
+      armPivL.rotation.x =  Math.sin(idleT * 0.85) * 0.045;
+      armPivR.rotation.x = -Math.sin(idleT * 0.85) * 0.045;
+      robot.rotation.y   = 0.14 + Math.sin(idleT * 0.5) * 0.035;
+      robot.rotation.x   = 0;
 
       // Visor glow always pulses
       matAccent.emissiveIntensity = 0.42 + 0.18 * Math.sin(idleT * 2.1);
@@ -788,23 +604,8 @@
     }
     requestAnimationFrame(render);
 
-    // ── Resize ────────────────────────────────────────────────
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        CW = window.innerWidth;
-        canvas.style.width = CW + 'px';
-        renderer.setSize(CW, CH);
-        syncCamera();
-        // Reposition if active
-        if (activeEl && state !== STATE.HIDDEN) positionCanvasAtHeading(activeEl);
-      }, 150);
-    }, { passive: true });
-
     window.addEventListener('unload', () => {
       cancelAnimationFrame(rafId);
-      obs.disconnect();
     }, { once: true });
   }());
 
@@ -821,8 +622,9 @@
      - Reduced motion: static, no animation
   ───────────────────────────────────────────── */
   (function initMobileRobot() {
-    if (window.innerWidth > 1024) return;
-
+    // No screen-width guard — let CSS handle visibility.
+    // The 2D canvas is hidden on desktop via CSS (min-width: 1025px → display:none)
+    // but we always initialise it so it's ready regardless of reported viewport width.
     const canvas = document.getElementById('robot-canvas-2d');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1082,3 +884,155 @@
   }());
 
 }());
+
+  /* ─────────────────────────────────────────────
+     ROBOT JOKE — click either canvas to fetch + display a joke
+     Uses JokeAPI (jokeapi.dev) — free, no key needed.
+     Two-part jokes (setup/delivery) typed out line by line.
+     Single jokes typed word by word.
+     Closes on × button or second click on robot.
+  ───────────────────────────────────────────── */
+  (function initRobotJoke() {
+    const bubble   = document.getElementById('joke-bubble');
+    const jokeText = document.getElementById('joke-text');
+    const closeBtn = document.getElementById('joke-close');
+    if (!bubble || !jokeText || !closeBtn) return;
+
+    let isOpen    = false;
+    let isFetching = false;
+    let typeTimer  = null;
+
+    // ── Show loading state ────────────────────────────────────
+    function showLoading() {
+      jokeText.innerHTML =
+        '<span class="joke-loading">' +
+        '<span></span><span></span><span></span>' +
+        '</span>';
+      bubble.classList.add('visible');
+      isOpen = true;
+    }
+
+    // ── Type out text line by line ────────────────────────────
+    // lines: array of strings. Each line fades in, then next starts.
+    function typeLines(lines) {
+      jokeText.innerHTML = '';
+      let lineIdx = 0;
+
+      function nextLine() {
+        if (lineIdx >= lines.length) return;
+
+        const span = document.createElement('span');
+        span.className = 'joke-line';
+        jokeText.appendChild(span);
+
+        const text  = lines[lineIdx];
+        const words = text.split(' ');
+        let wordIdx = 0;
+
+        // Type word by word within the line
+        function nextWord() {
+          if (wordIdx >= words.length) {
+            lineIdx++;
+            // Pause between lines — longer before punchline
+            const pause = lineIdx === 1 && lines.length > 1 ? 900 : 120;
+            typeTimer = setTimeout(nextLine, pause);
+            return;
+          }
+          span.textContent += (wordIdx === 0 ? '' : ' ') + words[wordIdx];
+          wordIdx++;
+          typeTimer = setTimeout(nextWord, 60 + Math.random() * 40);
+        }
+        nextWord();
+      }
+      nextLine();
+    }
+
+    // ── Fetch joke ────────────────────────────────────────────
+    async function fetchAndShow() {
+      if (isFetching) return;
+      isFetching = true;
+      clearTimeout(typeTimer);
+
+      // Toggle: if already open, close it
+      if (isOpen) {
+        closeBubble();
+        isFetching = false;
+        return;
+      }
+
+      showLoading();
+
+      // Position bubble above robot on desktop if robot is active
+      positionBubble();
+
+      try {
+        const res  = await fetch(
+          'https://v2.jokeapi.dev/joke/Programming,Miscellaneous?blacklistFlags=nsfw,racist,sexist,explicit&safe-mode'
+        );
+        const data = await res.json();
+
+        let lines;
+        if (data.type === 'twopart') {
+          lines = [data.setup, data.delivery];
+        } else {
+          lines = [data.joke];
+        }
+        typeLines(lines);
+      } catch {
+        typeLines(['Why do programmers prefer dark mode?', 'Because light attracts bugs! 🐛']);
+      } finally {
+        isFetching = false;
+      }
+    }
+
+    // ── Close ─────────────────────────────────────────────────
+    function closeBubble() {
+      bubble.classList.remove('visible');
+      clearTimeout(typeTimer);
+      isOpen = false;
+    }
+
+    // ── Position bubble near the robot ───────────────────────
+    function positionBubble() {
+      // Robot is always bottom-right on all screen sizes — bubble sits above it
+      bubble.style.removeProperty('top');
+      bubble.style.removeProperty('left');
+      bubble.style.removeProperty('transform');
+      // CSS handles bottom/right positioning
+    }
+
+    // ── Click handlers — both canvases ────────────────────────
+    // Make canvases clickable
+    ['robot-canvas', 'robot-canvas-2d'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.cursor = 'pointer';
+      el.style.pointerEvents = 'auto'; // override pointer-events:none for clicks
+      el.addEventListener('click', fetchAndShow);
+      // Touch tap (mobile)
+      let touchStartX, touchStartY;
+      el.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      el.addEventListener('touchend', e => {
+        const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+        // Only trigger if it was a tap (not a scroll)
+        if (dx < 10 && dy < 10) fetchAndShow();
+      }, { passive: true });
+    });
+
+    closeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      closeBubble();
+    });
+
+    // Close on outside click
+    document.addEventListener('click', e => {
+      if (!isOpen) return;
+      if (bubble.contains(e.target)) return;
+      if (e.target.id === 'robot-canvas' || e.target.id === 'robot-canvas-2d') return;
+      closeBubble();
+    });
+  }());
