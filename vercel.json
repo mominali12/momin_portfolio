@@ -1,45 +1,40 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "redirects": [
     {
       "source": "/",
-      "has": [
-        {
-          "type": "header",
-          "key": "x-vercel-ip-country",
-          "value": "DE"
-        }
-      ],
-      "destination": "/de/",
+      "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "DE" }],
+      "destination": "/de",
       "permanent": false
     },
     {
       "source": "/",
-      "has": [
-        {
-          "type": "header",
-          "key": "x-vercel-ip-country",
-          "value": "AT"
-        }
-      ],
-      "destination": "/de/",
+      "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "AT" }],
+      "destination": "/de",
       "permanent": false
     },
     {
       "source": "/",
-      "has": [
-        {
-          "type": "header",
-          "key": "x-vercel-ip-country",
-          "value": "CH"
-        }
-      ],
-      "destination": "/de/",
+      "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "CH" }],
+      "destination": "/de",
       "permanent": false
     },
     {
       "source": "/",
-      "destination": "/en/",
+      "destination": "/en",
       "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/public/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
