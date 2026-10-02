@@ -362,6 +362,72 @@ body.cursor-clicking .cursor-dot {
 .nav-toggle[aria-expanded="true"] span:first-child { transform: translateY(6.5px) rotate(45deg); }
 .nav-toggle[aria-expanded="true"] span:last-child  { transform: translateY(-6.5px) rotate(-45deg); }
 
+
+/* ── Language switcher ───────────────────────────────────────
+   Plain text links, same visual weight as nav links.
+   No globe icon, no flags (flags = countries, not languages).
+   Active language uses accent underline same as scroll-spy.
+   ─────────────────────────────────────────────────────────── */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lang-link {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  transition: color 0.15s ease;
+  padding-block: 2px;
+  position: relative;
+}
+
+.lang-link::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 0; height: 1.5px;
+  background: var(--accent);
+  transition: width 0.2s var(--ease-out-expo);
+}
+
+.lang-link:hover { color: var(--text-primary); }
+.lang-link:hover::after { width: 100%; }
+
+.lang-link.lang-active {
+  color: var(--accent);
+  pointer-events: none; /* current page, not clickable */
+}
+.lang-link.lang-active::after { width: 100%; }
+
+.lang-sep {
+  font-size: 0.72rem;
+  color: var(--border-strong);
+  font-family: var(--font-mono);
+  user-select: none;
+}
+
+/* Mobile menu language links */
+.mobile-lang {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.mobile-lang a {
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  padding-block: 8px;
+  border-bottom: none;
+}
+.mobile-lang a.lang-active { color: var(--accent); pointer-events: none; }
+
 /* ── Theme toggle button ──────────────────────────────────────
    Icon-only. No text label (SKILL §9.F - no eyebrow text).
    Accessible via aria-label updated by JS.
@@ -1449,6 +1515,31 @@ body.cursor-clicking .cursor-dot {
 }
 
 
+
+
+/* ── Mobile robot: 2D canvas, fixed bottom-right ─────────────
+   Lightweight Canvas 2D — no Three.js/WebGL on mobile.
+   Small enough to be unobtrusive, visible enough to be charming.
+   ─────────────────────────────────────────────────────────── */
+#robot-canvas-2d {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  width: 56px;
+  height: 72px;
+  pointer-events: none;
+  z-index: 35;
+  display: none; /* shown only on mobile via JS */
+}
+
+@media (max-width: 1024px) {
+  /* WebGL robot hidden, 2D robot visible */
+  #robot-canvas { display: none !important; }
+  #robot-canvas-2d { display: block; }
+}
+@media (min-width: 1025px) {
+  #robot-canvas-2d { display: none !important; }
+}
 
 /* ============================================================
    RESPONSIVE

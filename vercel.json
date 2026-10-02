@@ -1,0 +1,45 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "x-vercel-ip-country",
+          "value": "DE"
+        }
+      ],
+      "destination": "/de/",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "x-vercel-ip-country",
+          "value": "AT"
+        }
+      ],
+      "destination": "/de/",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "x-vercel-ip-country",
+          "value": "CH"
+        }
+      ],
+      "destination": "/de/",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "destination": "/en/",
+      "permanent": false
+    }
+  ]
+}
