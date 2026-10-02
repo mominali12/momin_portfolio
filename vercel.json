@@ -5,35 +5,36 @@
     {
       "source": "/",
       "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "DE" }],
-      "destination": "/de/index.html",
+      "destination": "/de",
       "permanent": false
     },
     {
       "source": "/",
       "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "AT" }],
-      "destination": "/de/index.html",
+      "destination": "/de",
       "permanent": false
     },
     {
       "source": "/",
       "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "CH" }],
-      "destination": "/de/index.html",
+      "destination": "/de",
       "permanent": false
     },
     {
       "source": "/",
-      "destination": "/en/index.html",
+      "destination": "/en",
       "permanent": false
     }
+  ],
+  "rewrites": [
+    { "source": "/en", "destination": "/en/index.html" },
+    { "source": "/de", "destination": "/de/index.html" }
   ],
   "headers": [
     {
       "source": "/public/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ]
