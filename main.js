@@ -325,7 +325,9 @@
        ✓ detachCanvas actually hides the canvas
   ───────────────────────────────────────────── */
   (function initRobot() {
-    if (window.innerWidth <= 1024) return;
+    // WebGL robot: desktop only (>1024px). Mobile uses 2D canvas instead.
+    const isMobileSize = window.innerWidth <= 1024;
+    if (isMobileSize) return;
 
     const canvas = document.getElementById('robot-canvas');
     if (!canvas) return;
@@ -642,6 +644,24 @@
       });
     }, { passive: true });
 
+    // ── Pointer tracking for head look-at ────────────────────
+    // Mouse position in viewport pixels; converted to world space in render loop.
+    // On touch devices, last touch position is used.
+    let pointerVX = window.innerWidth  / 2;
+    let pointerVY = window.innerHeight / 2;
+
+    document.addEventListener('mousemove', e => {
+      pointerVX = e.clientX;
+      pointerVY = e.clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', e => {
+      if (e.touches.length > 0) {
+        pointerVX = e.touches[0].clientX;
+        pointerVY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
     // ── Theme change ──────────────────────────────────────────
     document.addEventListener('themechange', () => {
       setTimeout(() => {
@@ -701,8 +721,47 @@
       body.position.y = bob;
 
       // ── Idle / walk animations ────────────────────────────
+      // ── Head look-at pointer (always, walking or idle) ──────
+      // Convert pointer viewport position to world space.
+      // Canvas is position:fixed, same size as viewport (CW x CH).
+      // World X = ((pointerVX / CW) - 0.5) * viewW
+      // World Y = (0.5 - (pointerVY - canvasScreenTop) / CH) * viewH
+      // We only need the angle from robot head to pointer.
+      // ── Head look-at pointer ─────────────────────────────────
+      // Convert mouse/touch viewport position to world space,
+      // then rotate headPiv toward it. Runs every frame, walking or idle.
+      {
+        const canvasTop  = parseFloat(canvas.style.top) || 0;
+
+        // Pointer in world space (orthographic: linear mapping)
+        const worldPX = ((pointerVX / CW) - 0.5) * viewW;
+        const worldPY = (0.5 - (pointerVY - canvasTop) / CH) * viewH;
+
+        // Head center in world space
+        const headWorldX = robot.position.x;
+        const headWorldY = robot.position.y + headPiv.position.y * robot.scale.y;
+
+        const dx = worldPX - headWorldX;
+        const dy = worldPY - headWorldY;
+
+        // Compute yaw (left-right) and pitch (up-down).
+        // Divisor controls sensitivity: smaller = more reactive.
+        // 2.5 gives a natural range across the full screen width.
+        const rawYaw   = Math.atan2(dx, 2.5);
+        const rawPitch = Math.atan2(-dy, 2.5);
+
+        // Clamp so neck doesn't snap to extremes
+        const targetYaw   = Math.max(-0.6, Math.min(0.6, rawYaw));
+        const targetPitch = Math.max(-0.3, Math.min(0.3, rawPitch));
+
+        // Smooth lerp — faster when idle, slightly slower while walking
+        const lerpSpeed = isWalking ? 0.08 : 0.12;
+        headPiv.rotation.y += (targetYaw   - headPiv.rotation.y) * lerpSpeed;
+        headPiv.rotation.x += (targetPitch - headPiv.rotation.x) * lerpSpeed;
+      }
+
       if (!isWalking) {
-        // Gentle head tilt
+        // Gentle head tilt (z-axis, layered on top of look-at y/x)
         headPiv.rotation.z   = Math.sin(idleT * 0.85) * 0.04;
         headPiv.position.y   = 0.82 + Math.sin(idleT * 1.5) * 0.016;
         // Antenna sway
@@ -747,6 +806,219 @@
       cancelAnimationFrame(rafId);
       obs.disconnect();
     }, { once: true });
+  }());
+
+  /* ─────────────────────────────────────────────
+     8b. MOBILE ROBOT (Canvas 2D — lightweight)
+     ─────────────────────────────────────────────
+     On mobile/tablet (<=1024px) the Three.js robot is hidden.
+     This draws a flat cartoon robot using Canvas 2D API:
+     - Zero WebGL overhead — runs at 60fps on any phone
+     - Same character design: round head, visor, antenna, body
+     - Idle: body bounce, antenna sway, visor pulse
+     - Head looks toward last touch position
+     - Fixed bottom-right corner, 56×72px
+     - Reduced motion: static, no animation
+  ───────────────────────────────────────────── */
+  (function initMobileRobot() {
+    if (window.innerWidth > 1024) return;
+
+    const canvas = document.getElementById('robot-canvas-2d');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const W = 56, H = 72;
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width  = W * DPR;
+    canvas.height = H * DPR;
+
+    // Force all positioning via JS — do not rely on CSS display/visibility
+    Object.assign(canvas.style, {
+      display:       'block',
+      position:      'fixed',
+      bottom:        '80px',
+      right:         '16px',
+      width:         W + 'px',
+      height:        H + 'px',
+      pointerEvents: 'none',
+      zIndex:        '35',
+    });
+
+    ctx.scale(DPR, DPR);
+
+    // roundRect polyfill for older iOS/Android browsers
+    function rr(x, y, w, h, r) {
+      if (ctx.roundRect) {
+        ctx.roundRect(x, y, w, h, r);
+      } else {
+        const cr = Math.min(r, w / 2, h / 2);
+        ctx.moveTo(x + cr, y);
+        ctx.lineTo(x + w - cr, y);
+        ctx.arcTo(x + w, y, x + w, y + cr, cr);
+        ctx.lineTo(x + w, y + h - cr);
+        ctx.arcTo(x + w, y + h, x + w - cr, y + h, cr);
+        ctx.lineTo(x + cr, y + h);
+        ctx.arcTo(x, y + h, x, y + h - cr, cr);
+        ctx.lineTo(x, y + cr);
+        ctx.arcTo(x, y, x + cr, y, cr);
+        ctx.closePath();
+      }
+    }
+
+    function getAccent() {
+      const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      return v || '#2C6EAB';
+    }
+    function getBody() {
+      const v = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim();
+      return v || '#ffffff';
+    }
+
+    // Touch tracking
+    let touchX = W / 2, touchY = H / 2;
+    document.addEventListener('touchmove', e => {
+      if (e.touches.length) {
+        const rect = canvas.getBoundingClientRect();
+        touchX = e.touches[0].clientX - rect.left;
+        touchY = e.touches[0].clientY - rect.top;
+      }
+    }, { passive: true });
+    // Also track mouse for when tested on desktop with 2D robot forced
+    document.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      touchX = e.clientX - rect.left;
+      touchY = e.clientY - rect.top;
+    }, { passive: true });
+
+    let idleT = 0;
+    let lastNow = performance.now();
+    let rafId;
+
+    // Smooth head look vars
+    let headLookX = 0, headLookY = 0; // offset in pixels
+
+    function draw(now) {
+      rafId = requestAnimationFrame(draw);
+      const dt = Math.min((now - lastNow) / 1000, 0.05);
+      lastNow = now;
+      if (!reducedMotion) idleT += dt;
+
+      ctx.clearRect(0, 0, W, H);
+
+      const accent = getAccent();
+      const cx = W / 2; // center X
+
+      // Idle bounce: body moves up/down slightly
+      const bounce = reducedMotion ? 0 : Math.sin(idleT * 1.8) * 1.2;
+
+      // Body (torso)
+      const bodyY = 38 + bounce;
+      ctx.fillStyle = '#252836';
+      ctx.beginPath();
+      rr(cx - 12, bodyY - 8, 24, 18, 3);
+      ctx.fill();
+
+      // Chest stripe (accent)
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      rr(cx - 8, bodyY - 4, 16, 4, 1.5);
+      ctx.fill();
+
+      // Hips
+      ctx.fillStyle = '#2e3248';
+      ctx.beginPath();
+      rr(cx - 9, bodyY + 10, 18, 5, 2);
+      ctx.fill();
+
+      // Legs
+      ctx.fillStyle = '#252836';
+      ctx.beginPath(); rr(cx - 8, bodyY + 15, 6, 10, 2); ctx.fill();
+      ctx.beginPath(); rr(cx + 2,  bodyY + 15, 6, 10, 2); ctx.fill();
+
+      // Feet
+      ctx.fillStyle = '#3e4460';
+      ctx.beginPath(); rr(cx - 9, bodyY + 24, 8, 3, 1); ctx.fill();
+      ctx.beginPath(); rr(cx + 1,  bodyY + 24, 8, 3, 1); ctx.fill();
+
+      // Arms
+      ctx.fillStyle = '#252836';
+      ctx.beginPath(); rr(cx - 16, bodyY - 5, 5, 12, 2); ctx.fill();
+      ctx.beginPath(); rr(cx + 11,  bodyY - 5, 5, 12, 2); ctx.fill();
+
+      // HEAD — look-at applied via offset
+      const headCY = 22 + bounce;
+      // Target look offset clamped to ±4px
+      const targetLookX = Math.max(-4, Math.min(4, (touchX - W/2) * 0.15));
+      const targetLookY = Math.max(-3, Math.min(3, (touchY - headCY) * 0.08));
+      headLookX += (targetLookX - headLookX) * 0.12;
+      headLookY += (targetLookY - headLookY) * 0.12;
+
+      const hx = cx + (reducedMotion ? 0 : headLookX);
+      const hy = headCY + (reducedMotion ? 0 : headLookY);
+
+      // Head body
+      ctx.fillStyle = '#252836';
+      ctx.beginPath();
+      rr(hx - 14, hy - 12, 28, 22, 4);
+      ctx.fill();
+
+      // Ear nubs
+      ctx.fillStyle = '#363c54';
+      ctx.fillRect(hx - 16, hy - 6, 3, 10);
+      ctx.fillRect(hx + 13,  hy - 6, 3, 10);
+
+      // Visor frame (accent)
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      rr(hx - 11, hy - 7, 22, 12, 2);
+      ctx.fill();
+
+      // Visor screen (dark)
+      ctx.fillStyle = '#060a12';
+      ctx.beginPath();
+      rr(hx - 9, hy - 5, 18, 9, 1.5);
+      ctx.fill();
+
+      // Eyes
+      const glowAlpha = reducedMotion ? 0.9 : 0.7 + 0.3 * Math.sin(idleT * 2.2);
+      ctx.fillStyle = `rgba(220,240,255,${glowAlpha})`;
+      ctx.beginPath(); ctx.arc(hx - 4, hy - 1, 2.5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(hx + 4, hy - 1, 2.5, 0, Math.PI*2); ctx.fill();
+
+      // Pupils (accent, smaller)
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = glowAlpha;
+      ctx.beginPath(); ctx.arc(hx - 4, hy - 1, 1.4, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(hx + 4, hy - 1, 1.4, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Cheeks
+      ctx.fillStyle = 'rgba(238,112,112,0.38)';
+      ctx.beginPath(); ctx.arc(hx - 9, hy + 3, 2.5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(hx + 9, hy + 3, 2.5, 0, Math.PI*2); ctx.fill();
+
+      // ANTENNA
+      const antSway = reducedMotion ? 0 : Math.sin(idleT * 1.8 + 0.5) * 2;
+      ctx.strokeStyle = '#4a5060';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(hx + 2, hy - 12);
+      ctx.lineTo(hx + 2 + antSway, hy - 18);
+      ctx.stroke();
+
+      // Antenna tip
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = glowAlpha;
+      ctx.beginPath(); ctx.arc(hx + 2 + antSway, hy - 19.5, 2, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    requestAnimationFrame(draw);
+    window.addEventListener('unload', () => cancelAnimationFrame(rafId), { once: true });
+
+    // Update accent on theme change
+    document.addEventListener('themechange', () => { /* accent read live from CSS var */ });
   }());
 
   /* ─────────────────────────────────────────────
