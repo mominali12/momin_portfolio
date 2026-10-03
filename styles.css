@@ -1525,8 +1525,8 @@ body.cursor-clicking .cursor-dot {
   position: fixed;
   bottom: 80px;
   right: 16px;
-  width: 56px;
-  height: 72px;
+  width: 38px;
+  height: 50px;
   pointer-events: none;
   z-index: 35;
   display: none;

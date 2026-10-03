@@ -630,7 +630,7 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const W = 56, H = 72;
+    const W = 38, H = 50;
     const DPR = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width  = W * DPR;
     canvas.height = H * DPR;
