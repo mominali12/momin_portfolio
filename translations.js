@@ -172,12 +172,12 @@ function applyTranslations(lang) {
       // But simplest: just use textContent if no child elements, innerHTML otherwise
       var hasChildElements = el.querySelector('*') !== null;
       if (hasChildElements) {
-        // Update only the direct text nodes
-        Array.from(el.childNodes).forEach(function(node) {
-          if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-            node.textContent = val;
-          }
+        // Only update the FIRST non-empty text node — never all of them,
+        // or elements with <br> or inline elements will duplicate the string.
+        var firstTextNode = Array.from(el.childNodes).find(function(n) {
+          return n.nodeType === Node.TEXT_NODE && n.textContent.trim();
         });
+        if (firstTextNode) firstTextNode.textContent = val;
       } else {
         el.textContent = val;
       }
