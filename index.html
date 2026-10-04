@@ -82,17 +82,17 @@
     </a>
     <div class="nav-right">
       <div class="nav-links" role="list">
-        <a href="#work" role="listitem">Work</a>
-        <a href="#capabilities" role="listitem">Capabilities</a>
-        <a href="#recognition" role="listitem">Recognition</a>
-        <a href="#contact" role="listitem">Contact</a>
+        <a href="#work" role="listitem" data-i18n="nav.work">Work</a>
+        <a href="#capabilities" role="listitem" data-i18n="nav.capabilities">Capabilities</a>
+        <a href="#recognition" role="listitem" data-i18n="nav.recognition">Recognition</a>
+        <a href="#contact" role="listitem" data-i18n="nav.contact">Contact</a>
       </div>
 
       <!-- Language switcher: directory links, no widget, no flags -->
       <div class="lang-switcher" role="navigation" aria-label="Language">
-        <a href="/en/" class="lang-link lang-active" aria-current="true" lang="en">EN</a>
+        <a href="#" class="lang-link lang-active" aria-current="true" lang="en" onclick="applyTranslations('en');return false;">EN</a>
         <span class="lang-sep" aria-hidden="true">/</span>
-        <a href="/de/" class="lang-link" lang="de" hreflang="de">DE</a>
+        <a href="#" class="lang-link" lang="de" hreflang="de" onclick="applyTranslations('de');return false;">DE</a>
       </div>
 
       <!-- Theme toggle -->
@@ -115,13 +115,13 @@
     </div>
   </div>
   <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
-    <a href="#work">Work</a>
-    <a href="#capabilities">Capabilities</a>
-    <a href="#recognition">Recognition</a>
-    <a href="#contact">Contact</a>
+    <a href="#work" data-i18n="nav.work">Work</a>
+    <a href="#capabilities" data-i18n="nav.capabilities">Capabilities</a>
+    <a href="#recognition" data-i18n="nav.recognition">Recognition</a>
+    <a href="#contact" data-i18n="nav.contact">Contact</a>
     <div class="mobile-lang">
-      <a href="/en/" class="lang-active" aria-current="true">EN — English</a>
-      <a href="/de/" hreflang="de">DE — Deutsch</a>
+      <a href="#" class="lang-active" data-lang="en" onclick="applyTranslations('en');return false;" aria-current="true">EN — English</a>
+      <a href="#" data-lang="de" hreflang="de" onclick="applyTranslations('de');return false;">DE — Deutsch</a>
     </div>
   </div>
 </nav>
@@ -135,42 +135,38 @@
         <span class="award-star" aria-hidden="true">★</span>
         Best Paper, ACM-SAC 2026
       </a>
-      <h1 class="hero-headline" id="heading-hero">
-        Machine learning<br>that ships.
-      </h1>
-      <p class="hero-sub">
-        5+ years deploying deep learning from cloud pipelines to microcontrollers.
-      </p>
+      <h1 class="hero-headline" id="heading-hero" data-i18n="hero.headline">Machine learning<br>that ships.</h1>
+      <p class="hero-sub" data-i18n="hero.sub">5+ years deploying deep learning from cloud pipelines to microcontrollers.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="#work">See the work</a>
+        <a class="btn btn-primary" href="#work" data-i18n="hero.cta.work">See the work</a>
         <a class="btn btn-ghost" href="mailto:mominali.works@gmail.com">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><polyline points="1.5,3.5 8,9 14.5,3.5"/></svg>
           Get in touch
         </a>
       </div>
-      <p class="hero-availability">Open to work &middot; Remote worldwide &middot; Hybrid EU</p>
+      <p class="hero-availability" data-i18n="hero.availability">Open to work &middot; Remote worldwide &middot; Hybrid EU</p>
     </div>
 
     <div class="hero-stats" aria-label="Key metrics">
       <div class="stat-cell">
         <svg class="stat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="6" y1="12" x2="6" y2="15"/><line x1="10" y1="12" x2="10" y2="15"/><line x1="1" y1="6" x2="4" y2="6"/><line x1="1" y1="10" x2="4" y2="10"/><line x1="12" y1="6" x2="15" y2="6"/><line x1="12" y1="10" x2="15" y2="10"/></svg>
         <span class="stat-n" data-target="94" data-suffix="%">94%</span>
-        <span class="stat-l">Ship-detection accuracy on-device</span>
+        <span class="stat-l" data-i18n="stat.0.label">Ship-detection accuracy on-device</span>
       </div>
       <div class="stat-cell">
         <svg class="stat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="5.5" width="13" height="9" rx="1.5"/><path d="M5.5 5.5V4a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 10.5 4v1.5"/><line x1="1.5" y1="10" x2="14.5" y2="10"/></svg>
         <span class="stat-n" data-target="5" data-suffix="+">5+</span>
-        <span class="stat-l">Years across research and industry</span>
+        <span class="stat-l" data-i18n="stat.1.label">Years across research and industry</span>
       </div>
       <div class="stat-cell">
         <svg class="stat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2.5A1.5 1.5 0 0 1 4.5 1h5.086a1.5 1.5 0 0 1 1.06.44l2.415 2.414A1.5 1.5 0 0 1 13.5 4.914V13.5A1.5 1.5 0 0 1 12 15H4.5A1.5 1.5 0 0 1 3 13.5z"/><polyline points="9.5,1 9.5,4.5 13,4.5"/><line x1="5.5" y1="8" x2="10.5" y2="8"/><line x1="5.5" y1="11" x2="10.5" y2="11"/></svg>
         <span class="stat-n" data-target="4" data-suffix="">4</span>
-        <span class="stat-l">Peer-reviewed venues incl. NeurIPS &amp; SenSys</span>
+        <span class="stat-l" data-i18n="stat.2.label">Peer-reviewed venues incl. NeurIPS &amp; SenSys</span>
       </div>
       <div class="stat-cell">
         <svg class="stat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 10.5a3 3 0 1 0-1.5-5.6A4 4 0 1 0 4 10.5"/><line x1="7" y1="10.5" x2="12.5" y2="10.5"/></svg>
         <span class="stat-n" data-target="3" data-suffix="">3</span>
-        <span class="stat-l">Clouds in production: AWS, Azure, GCP</span>
+        <span class="stat-l" data-i18n="stat.3.label">Clouds in production: AWS, Azure, GCP</span>
       </div>
     </div>
   </div>
@@ -182,15 +178,15 @@
 <!-- THESIS -->
 <section class="thesis" aria-label="About">
   <div class="wrap">
-    <p class="thesis-lead">Most ML never leaves the notebook. <strong>Mine runs where it matters:</strong> on constrained hardware, at scale, in production.</p>
-    <p class="thesis-body">I work at the seam between deep-learning research and shipped systems: compressing models for microcontrollers, building reliable RAG pipelines, and deploying across AWS, Azure and GCP.</p>
+    <p class="thesis-lead" data-i18n="thesis.lead">Most ML never leaves the notebook. <strong>Mine runs where it matters:</strong> on constrained hardware, at scale, in production.</p>
+    <p class="thesis-body" data-i18n="thesis.body">I work at the seam between deep-learning research and shipped systems: compressing models for microcontrollers, building reliable RAG pipelines, and deploying across AWS, Azure and GCP.</p>
   </div>
 </section>
 
 <!-- SELECTED WORK -->
 <section id="work" class="section">
   <div class="wrap">
-    <h2 class="section-title" id="heading-work">Selected work</h2>
+    <h2 class="section-title" id="heading-work" data-i18n="work.title">Selected work</h2>
     <div class="work-grid">
       <article class="card card-award" aria-label="Featured project: Ship detection">
         <div class="card-award-inner">
@@ -240,18 +236,18 @@
 <!-- CAPABILITIES -->
 <section id="capabilities" class="section section-subtle" aria-label="Capabilities">
   <div class="wrap">
-    <h2 class="section-title" id="heading-capabilities">Capabilities</h2>
+    <h2 class="section-title" id="heading-capabilities" data-i18n="cap.title">Capabilities</h2>
     <div class="caps-grid">
       <div class="cap-group">
-        <h3 class="cap-title">Edge &amp; On-Device ML</h3>
+        <h3 class="cap-title" data-i18n="cap.0.title">Edge &amp; On-Device ML</h3>
         <div class="pill-row" role="list"><span class="pill" role="listitem">TinyML</span><span class="pill" role="listitem">Model compression</span><span class="pill" role="listitem">Embedded systems</span><span class="pill" role="listitem">Microcontrollers</span><span class="pill" role="listitem">CNN architectures</span></div>
       </div>
       <div class="cap-group">
-        <h3 class="cap-title">Deep Learning &amp; LLMs</h3>
+        <h3 class="cap-title" data-i18n="cap.1.title">Deep Learning &amp; LLMs</h3>
         <div class="pill-row" role="list"><span class="pill" role="listitem">PyTorch</span><span class="pill" role="listitem">TensorFlow</span><span class="pill" role="listitem">LLMs</span><span class="pill" role="listitem">RAG</span><span class="pill" role="listitem">BERT / NLP</span><span class="pill" role="listitem">Computer vision</span></div>
       </div>
       <div class="cap-group">
-        <h3 class="cap-title">Cloud, Data &amp; MLOps</h3>
+        <h3 class="cap-title" data-i18n="cap.2.title">Cloud, Data &amp; MLOps</h3>
         <div class="pill-row" role="list"><span class="pill" role="listitem">AWS</span><span class="pill" role="listitem">Azure</span><span class="pill" role="listitem">GCP</span><span class="pill" role="listitem">Apache Spark</span><span class="pill" role="listitem">ETL / ELT</span><span class="pill" role="listitem">Docker</span><span class="pill" role="listitem">Kubernetes</span><span class="pill" role="listitem">CI/CD</span></div>
       </div>
     </div>
@@ -261,16 +257,16 @@
 <!-- RECOGNITION -->
 <section id="recognition" class="section" aria-label="Recognition and research">
   <div class="wrap">
-    <h2 class="section-title" id="heading-recognition">Recognition</h2>
+    <h2 class="section-title" id="heading-recognition" data-i18n="rec.title">Recognition</h2>
     <div class="rec-layout">
       <div class="rec-award-block">
-        <p class="rec-award-label">Best Paper Award</p>
-        <p class="rec-award-venue">ACM Symposium on Applied Computing, 2026</p>
-        <p class="rec-award-desc">For deploying an accurate deep-learning ship-detection model on a resource-constrained microcontroller.</p>
+        <p class="rec-award-label" data-i18n="rec.award.label">Best Paper Award</p>
+        <p class="rec-award-venue" data-i18n="rec.award.venue">ACM Symposium on Applied Computing, 2026</p>
+        <p class="rec-award-desc" data-i18n="rec.award.desc">For deploying an accurate deep-learning ship-detection model on a resource-constrained microcontroller.</p>
       </div>
       <div class="rec-right">
         <div class="rec-venues">
-          <p class="rec-venues-label">Peer-reviewed at</p>
+          <p class="rec-venues-label" data-i18n="rec.venues.label">Peer-reviewed at</p>
           <div class="venue-chips" role="list"><span class="venue-chip" role="listitem">NeurIPS</span><span class="venue-chip" role="listitem">SenSys</span><span class="venue-chip" role="listitem">EWSN</span><span class="venue-chip" role="listitem">DCOSS</span></div>
         </div>
         <div class="rec-certs">
@@ -292,10 +288,10 @@
 <!-- EXPERIENCE -->
 <section id="experience" class="section section-subtle" aria-label="Experience">
   <div class="wrap">
-    <h2 class="section-title" id="heading-experience">Experience</h2>
+    <h2 class="section-title" id="heading-experience" data-i18n="exp.title">Experience</h2>
     <div class="timeline">
       <div class="tl-item">
-        <div class="tl-when">Mar 2023 - Present</div>
+        <div class="tl-when" data-i18n="exp.0.when">Mar 2023 - Present</div>
         <div class="tl-body">
           <div class="tl-meta">
             <span class="tl-role-icon" aria-label="Research role"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="12" x2="8" y2="8"/><path d="M5.5 8a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Z"/><line x1="8" y1="5.5" x2="8" y2="1"/><line x1="6" y1="1" x2="10" y2="1"/><line x1="5" y1="14.5" x2="11" y2="14.5"/></svg></span>
@@ -307,7 +303,7 @@
         </div>
       </div>
       <div class="tl-item">
-        <div class="tl-when">Sep 2021 - Mar 2023</div>
+        <div class="tl-when" data-i18n="exp.1.when">Sep 2021 - Mar 2023</div>
         <div class="tl-body">
           <div class="tl-meta">
             <span class="tl-role-icon" aria-label="Industry role"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="12" rx="1"/><path d="M2 7h12"/><line x1="6" y1="7" x2="6" y2="15"/><line x1="10" y1="7" x2="10" y2="15"/><line x1="5" y1="3" x2="5" y2="1"/><line x1="11" y1="3" x2="11" y2="1"/></svg></span>
@@ -319,7 +315,7 @@
         </div>
       </div>
       <div class="tl-item">
-        <div class="tl-when">Aug 2019 - Sep 2021</div>
+        <div class="tl-when" data-i18n="exp.2.when">Aug 2019 - Sep 2021</div>
         <div class="tl-body">
           <div class="tl-meta">
             <span class="tl-role-icon" aria-label="Research role"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="12" x2="8" y2="8"/><path d="M5.5 8a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Z"/><line x1="8" y1="5.5" x2="8" y2="1"/><line x1="6" y1="1" x2="10" y2="1"/><line x1="5" y1="14.5" x2="11" y2="14.5"/></svg></span>
@@ -342,8 +338,8 @@
 <section id="contact" class="section-contact" aria-label="Contact">
   <div class="contact-mesh" aria-hidden="true"></div>
   <div class="wrap">
-    <h2 class="contact-headline" id="heading-contact">Let's build ML that ships.</h2>
-    <p class="contact-sub">Open to ML Engineer, Data Scientist, Applied Scientist and Edge AI roles, remote worldwide, or hybrid in the EU.</p>
+    <h2 class="contact-headline" id="heading-contact" data-i18n="contact.headline">Let's build ML that ships.</h2>
+    <p class="contact-sub" data-i18n="contact.sub">Open to ML Engineer, Data Scientist, Applied Scientist and Edge AI roles, remote worldwide, or hybrid in the EU.</p>
     <div class="contact-links">
       <a class="contact-email" href="mailto:mominali.works@gmail.com" aria-label="Send email to mominali.works@gmail.com">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><polyline points="1.5,3.5 8,9 14.5,3.5"/></svg>
@@ -360,7 +356,7 @@
 <footer class="footer" role="contentinfo">
   <div class="wrap footer-inner">
     <span>© 2026 Momin Ali</span>
-    <span>ML Engineer</span>
+    <span data-i18n="footer.role">ML Engineer</span>
     <a href="#top" class="back-to-top" aria-label="Back to top of page">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="13" x2="8" y2="3"/><polyline points="4,7 8,3 12,7"/></svg>
       Back to top
@@ -377,6 +373,7 @@
   <div id="joke-text"></div>
   <button id="joke-close" aria-label="Close joke">×</button>
 </div>
+<script src="translations.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="main.js"></script>
 </body>
