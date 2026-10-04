@@ -74,7 +74,7 @@
 <body>
 
 <!-- NAV -->
-<nav class="nav" id="nav" aria-label="Primary navigation">
+<nav class="nav" id="nav" aria-label="Primary navigation" data-i18n-aria="aria.nav">
   <div class="nav-inner wrap">
     <a href="#" class="brandmark" aria-label="Momin Ali, home">
       <span class="brandmark-initials" aria-hidden="true">MA</span>
@@ -141,13 +141,13 @@
         <a class="btn btn-primary" href="#work" data-i18n="hero.cta.work">See the work</a>
         <a class="btn btn-ghost" href="mailto:mominali.works@gmail.com">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><polyline points="1.5,3.5 8,9 14.5,3.5"/></svg>
-          Get in touch
+          <span data-i18n="hero.cta.email">Get in touch</span>
         </a>
       </div>
       <p class="hero-availability" data-i18n="hero.availability">Open to work &middot; Remote worldwide &middot; Hybrid EU</p>
     </div>
 
-    <div class="hero-stats" aria-label="Key metrics">
+    <div class="hero-stats" aria-label="Key metrics" data-i18n-aria="aria.stats">
       <div class="stat-cell">
         <svg class="stat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="6" y1="12" x2="6" y2="15"/><line x1="10" y1="12" x2="10" y2="15"/><line x1="1" y1="6" x2="4" y2="6"/><line x1="1" y1="10" x2="4" y2="10"/><line x1="12" y1="6" x2="15" y2="6"/><line x1="12" y1="10" x2="15" y2="10"/></svg>
         <span class="stat-n" data-target="94" data-suffix="%">94%</span>
@@ -188,63 +188,63 @@
   <div class="wrap">
     <h2 class="section-title" id="heading-work" data-i18n="work.title">Selected work</h2>
     <div class="work-grid">
-      <article class="card card-award" aria-label="Featured project: Ship detection">
+      <article class="card card-award" aria-label="Featured project: Ship detection" data-i18n-aria="aria.work.0">
         <div class="card-award-inner">
           <div class="card-award-content">
             <div class="card-tags"><span class="tag">Edge AI</span><span class="tag">TinyML</span></div>
-            <h3>Ship detection on a microcontroller</h3>
-            <p>Deep-learning model for acoustic ship classification, compressed and deployed on a resource-constrained microcontroller. Full inference at the edge, no cloud required.</p>
-            <div class="card-metric"><span class="metric-value">94%</span><span class="metric-label">accuracy on-device</span></div>
+            <h3 data-i18n="work.0.title">Ship detection on a microcontroller</h3>
+            <p data-i18n="work.0.desc">Deep-learning model for acoustic ship classification, compressed and deployed on a resource-constrained microcontroller. Full inference at the edge, no cloud required.</p>
+            <div class="card-metric"><span class="metric-value">94%</span><span class="metric-label" data-i18n="work.0.metric.label">accuracy on-device</span></div>
           </div>
           <div class="card-award-badge" aria-label="Award"><span class="badge-star" aria-hidden="true">★</span><span class="badge-text">Best Paper<br>ACM-SAC 2026</span></div>
         </div>
       </article>
-      <article class="card" aria-label="Project: Railroad safety">
+      <article class="card" aria-label="Project: Railroad safety" data-i18n-aria="aria.work.1">
         <div class="card-tags"><span class="tag">Edge Vision</span></div>
-        <h3>Railroad safety in adverse weather</h3>
-        <p>Object-detection system built for reliability in low-visibility, high-risk conditions. A missed detection here has real-world cost.</p>
-        <div class="card-metric"><span class="metric-value">Real-time</span><span class="metric-label">low-visibility object detection</span></div>
+        <h3 data-i18n="work.1.title">Railroad safety in adverse weather</h3>
+        <p data-i18n="work.1.desc">Object-detection system built for reliability in low-visibility, high-risk conditions. A missed detection here has real-world cost.</p>
+        <div class="card-metric"><span class="metric-value" data-i18n="work.1.metric.value">Real-time</span><span class="metric-label" data-i18n="work.1.metric.label">low-visibility object detection</span></div>
       </article>
-      <article class="card" aria-label="Project: RAG systems">
+      <article class="card" aria-label="Project: RAG systems" data-i18n-aria="aria.work.2">
         <div class="card-tags"><span class="tag">LLMs</span><span class="tag">RAG</span></div>
-        <h3>RAG systems for faster processing</h3>
-        <p>Retrieval-augmented generation pipelines that cut end-to-end processing time while keeping answers grounded in source documents.</p>
-        <div class="card-metric"><span class="metric-value">-25%</span><span class="metric-label">processing time</span></div>
+        <h3 data-i18n="work.2.title">RAG systems for faster processing</h3>
+        <p data-i18n="work.2.desc">Retrieval-augmented generation pipelines that cut end-to-end processing time while keeping answers grounded in source documents.</p>
+        <div class="card-metric"><span class="metric-value">-25%</span><span class="metric-label" data-i18n="work.2.metric.label">processing time</span></div>
       </article>
-      <article class="card card-wide" aria-label="Project: Multi-cloud migration">
+      <article class="card card-wide" aria-label="Project: Multi-cloud migration" data-i18n-aria="aria.work.3">
         <div class="card-tags"><span class="tag">Cloud</span><span class="tag">Data Engineering</span></div>
-        <h3>Multi-cloud migration, zero data loss</h3>
-        <p>Led migration of Pakistan's largest telecom to AWS, Azure and GCP. Automated the data-verification pipeline with CI/CD, Docker, and Kubernetes.</p>
-        <div class="card-metric"><span class="metric-value">45%</span><span class="metric-label">faster verification with zero data loss</span></div>
+        <h3 data-i18n="work.3.title">Multi-cloud migration, zero data loss</h3>
+        <p data-i18n="work.3.desc">Led migration of Pakistan's largest telecom to AWS, Azure and GCP. Automated the data-verification pipeline with CI/CD, Docker, and Kubernetes.</p>
+        <div class="card-metric"><span class="metric-value">45%</span><span class="metric-label" data-i18n="work.3.metric.label">faster verification with zero data loss</span></div>
       </article>
-      <article class="card" aria-label="Project: Scalable CNN">
+      <article class="card" aria-label="Project: Scalable CNN" data-i18n-aria="aria.work.4">
         <div class="card-tags"><span class="tag">Scalable ML</span></div>
-        <h3>One model, any device</h3>
-        <p>Reusable CNN frameworks designed for the resource-constrained world. The same architecture scales from server to sensor.</p>
-        <div class="card-metric"><span class="metric-value">21%</span><span class="metric-label">ELT integrity gain</span></div>
+        <h3 data-i18n="work.4.title">One model, any device</h3>
+        <p data-i18n="work.4.desc">Reusable CNN frameworks designed for the resource-constrained world. The same architecture scales from server to sensor.</p>
+        <div class="card-metric"><span class="metric-value">21%</span><span class="metric-label" data-i18n="work.4.metric.label">ELT integrity gain</span></div>
       </article>
-      <article class="card" aria-label="Project: NLP and medical imaging">
+      <article class="card" aria-label="Project: NLP and medical imaging" data-i18n-aria="aria.work.5">
         <div class="card-tags"><span class="tag">Applied Research</span></div>
-        <h3>NLP and medical imaging</h3>
-        <p>Fine-tuned BERT over 10k medical documents for citation retrieval, processed 80M+ records, and built a COVID-19 X-ray classifier.</p>
-        <div class="card-metric"><span class="metric-value">0.80 F1</span><span class="metric-label">BERT citation retrieval</span></div>
+        <h3 data-i18n="work.5.title">NLP and medical imaging</h3>
+        <p data-i18n="work.5.desc">Fine-tuned BERT over 10k medical documents for citation retrieval, processed 80M+ records, and built a COVID-19 X-ray classifier.</p>
+        <div class="card-metric"><span class="metric-value">0.80 F1</span><span class="metric-label" data-i18n="work.5.metric.label">BERT citation retrieval</span></div>
       </article>
     </div>
   </div>
 </section>
 
 <!-- CAPABILITIES -->
-<section id="capabilities" class="section section-subtle" aria-label="Capabilities">
+<section id="capabilities" class="section section-subtle" aria-label="Capabilities" data-i18n-aria="aria.capabilities">
   <div class="wrap">
     <h2 class="section-title" id="heading-capabilities" data-i18n="cap.title">Capabilities</h2>
     <div class="caps-grid">
       <div class="cap-group">
         <h3 class="cap-title" data-i18n="cap.0.title">Edge &amp; On-Device ML</h3>
-        <div class="pill-row" role="list"><span class="pill" role="listitem">TinyML</span><span class="pill" role="listitem">Model compression</span><span class="pill" role="listitem">Embedded systems</span><span class="pill" role="listitem">Microcontrollers</span><span class="pill" role="listitem">CNN architectures</span></div>
+        <div class="pill-row" role="list"><span class="pill" role="listitem">TinyML</span><span class="pill" role="listitem" data-i18n="cap.pill.modelcompression">Model compression</span><span class="pill" role="listitem" data-i18n="cap.pill.embeddedsystems">Embedded systems</span><span class="pill" role="listitem">Microcontrollers</span><span class="pill" role="listitem">CNN architectures</span></div>
       </div>
       <div class="cap-group">
         <h3 class="cap-title" data-i18n="cap.1.title">Deep Learning &amp; LLMs</h3>
-        <div class="pill-row" role="list"><span class="pill" role="listitem">PyTorch</span><span class="pill" role="listitem">TensorFlow</span><span class="pill" role="listitem">LLMs</span><span class="pill" role="listitem">RAG</span><span class="pill" role="listitem">BERT / NLP</span><span class="pill" role="listitem">Computer vision</span></div>
+        <div class="pill-row" role="list"><span class="pill" role="listitem">PyTorch</span><span class="pill" role="listitem">TensorFlow</span><span class="pill" role="listitem">LLMs</span><span class="pill" role="listitem">RAG</span><span class="pill" role="listitem">BERT / NLP</span><span class="pill" role="listitem" data-i18n="cap.pill.computervision">Computer vision</span></div>
       </div>
       <div class="cap-group">
         <h3 class="cap-title" data-i18n="cap.2.title">Cloud, Data &amp; MLOps</h3>
@@ -255,7 +255,7 @@
 </section>
 
 <!-- RECOGNITION -->
-<section id="recognition" class="section" aria-label="Recognition and research">
+<section id="recognition" class="section" aria-label="Recognition and research" data-i18n-aria="aria.recognition">
   <div class="wrap">
     <h2 class="section-title" id="heading-recognition" data-i18n="rec.title">Recognition</h2>
     <div class="rec-layout">
@@ -272,12 +272,12 @@
         <div class="rec-certs">
           <p class="rec-venues-label">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:13px;height:13px;display:inline-block;vertical-align:-1px;margin-right:5px;"><path d="M8 1.5L2 4v4c0 3.31 2.69 6 6 7.5C14 14 14 8 14 8V4L8 1.5Z"/><polyline points="5.5,8 7.5,10 11,6"/></svg>
-            Certifications
+            <span data-i18n="rec.certs.label">Certifications</span>
           </p>
           <ul class="cert-list">
-            <li>Deep Learning: Neural Networks &amp; Hyperparameter Tuning</li>
-            <li>Microsoft Certified: Azure Fundamentals</li>
-            <li>Cloud Computing: Core Concepts &amp; Application Migration</li>
+            <li data-i18n="rec.certs.0">Deep Learning: Neural Networks &amp; Hyperparameter Tuning</li>
+            <li data-i18n="rec.certs.1">Microsoft Certified: Azure Fundamentals</li>
+            <li data-i18n="rec.certs.2">Cloud Computing: Core Concepts &amp; Application Migration</li>
           </ul>
         </div>
       </div>
@@ -286,7 +286,7 @@
 </section>
 
 <!-- EXPERIENCE -->
-<section id="experience" class="section section-subtle" aria-label="Experience">
+<section id="experience" class="section section-subtle" aria-label="Experience" data-i18n-aria="aria.experience">
   <div class="wrap">
     <h2 class="section-title" id="heading-experience" data-i18n="exp.title">Experience</h2>
     <div class="timeline">
@@ -295,11 +295,11 @@
         <div class="tl-body">
           <div class="tl-meta">
             <span class="tl-role-icon" aria-label="Research role"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="12" x2="8" y2="8"/><path d="M5.5 8a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Z"/><line x1="8" y1="5.5" x2="8" y2="1"/><line x1="6" y1="1" x2="10" y2="1"/><line x1="5" y1="14.5" x2="11" y2="14.5"/></svg></span>
-            <span class="tl-location" aria-label="Location: Germany"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5A4.5 4.5 0 0 1 12.5 6c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5Z"/><circle cx="8" cy="6" r="1.5"/></svg>Germany</span>
+            <span class="tl-location" aria-label="Location: Germany"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5A4.5 4.5 0 0 1 12.5 6c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5Z"/><circle cx="8" cy="6" r="1.5"/></svg data-i18n="exp.0.loc">Germany</span>
           </div>
-          <h3>Research Engineer, Data Science</h3>
+          <h3 data-i18n="exp.0.role">Research Engineer, Data Science</h3>
           <p class="tl-org">Kiel University, Distributed Systems Lab</p>
-          <p class="tl-desc">Deploying deep learning on resource-constrained devices. Award-winning on-device ship detection, railway-safety vision, and scalable CNN frameworks.</p>
+          <p class="tl-desc" data-i18n="exp.0.desc">Deploying deep learning on resource-constrained devices. Award-winning on-device ship detection, railway-safety vision, and scalable CNN frameworks.</p>
         </div>
       </div>
       <div class="tl-item">
@@ -307,11 +307,11 @@
         <div class="tl-body">
           <div class="tl-meta">
             <span class="tl-role-icon" aria-label="Industry role"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="12" rx="1"/><path d="M2 7h12"/><line x1="6" y1="7" x2="6" y2="15"/><line x1="10" y1="7" x2="10" y2="15"/><line x1="5" y1="3" x2="5" y2="1"/><line x1="11" y1="3" x2="11" y2="1"/></svg></span>
-            <span class="tl-location" aria-label="Location: Pakistan"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5A4.5 4.5 0 0 1 12.5 6c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5Z"/><circle cx="8" cy="6" r="1.5"/></svg>Pakistan</span>
+            <span class="tl-location" aria-label="Location: Pakistan"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5A4.5 4.5 0 0 1 12.5 6c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5Z"/><circle cx="8" cy="6" r="1.5"/></svg data-i18n="exp.1.loc" data-i18n="exp.2.loc">Pakistan</span>
           </div>
-          <h3>Software Engineer I to II</h3>
+          <h3 data-i18n="exp.1.role">Software Engineer I to II</h3>
           <p class="tl-org">Teradata</p>
-          <p class="tl-desc">Designed data pipelines for a national telecom migration to AWS, Azure and GCP with zero data loss. Automated data verification (45% faster) and built ELT pipelines with CI/CD.</p>
+          <p class="tl-desc" data-i18n="exp.1.desc">Designed data pipelines for a national telecom migration to AWS, Azure and GCP with zero data loss. Automated data verification (45% faster) and built ELT pipelines with CI/CD.</p>
         </div>
       </div>
       <div class="tl-item">
@@ -321,15 +321,15 @@
             <span class="tl-role-icon" aria-label="Research role"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="12" x2="8" y2="8"/><path d="M5.5 8a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Z"/><line x1="8" y1="5.5" x2="8" y2="1"/><line x1="6" y1="1" x2="10" y2="1"/><line x1="5" y1="14.5" x2="11" y2="14.5"/></svg></span>
             <span class="tl-location" aria-label="Location: Pakistan"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5A4.5 4.5 0 0 1 12.5 6c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5Z"/><circle cx="8" cy="6" r="1.5"/></svg>Pakistan</span>
           </div>
-          <h3>Research Engineer, Data Science</h3>
+          <h3 data-i18n="exp.2.role">Research Engineer, Data Science</h3>
           <p class="tl-org">Information Technology University</p>
-          <p class="tl-desc">NLP and medical-imaging research: BERT citation retrieval (0.80 F1), 80M-record processing pipelines, and a COVID-19 X-ray classifier (94% precision, 95% recall).</p>
+          <p class="tl-desc" data-i18n="exp.2.desc">NLP and medical-imaging research: BERT citation retrieval (0.80 F1), 80M-record processing pipelines, and a COVID-19 X-ray classifier (94% precision, 95% recall).</p>
         </div>
       </div>
     </div>
     <div class="exp-footer">
-      <span><strong>Education:</strong> MS Data Science, ITU &middot; BS Computer Science, FAST-NUCES</span>
-      <span><strong>Languages:</strong> English (professional), Urdu (native), German (elementary)</span>
+      <span data-i18n="exp.footer.education"><strong>Education:</strong> MS Data Science, ITU &middot; BS Computer Science, FAST-NUCES</span>
+      <span data-i18n="exp.footer.languages"><strong>Languages:</strong> English (professional), Urdu (native), German (elementary)</span>
     </div>
   </div>
 </section>
@@ -359,7 +359,7 @@
     <span data-i18n="footer.role">ML Engineer</span>
     <a href="#top" class="back-to-top" aria-label="Back to top of page">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="13" x2="8" y2="3"/><polyline points="4,7 8,3 12,7"/></svg>
-      Back to top
+      <span data-i18n="footer.backtop">Back to top</span>
     </a>
   </div>
 </footer>
@@ -369,9 +369,9 @@
 <canvas id="robot-canvas-2d" aria-hidden="true"></canvas>
 
 <!-- Joke speech bubble — shown when robot is clicked -->
-<div id="joke-bubble" aria-live="polite" aria-label="Robot joke">
+<div id="joke-bubble" aria-live="polite" aria-label="Robot joke" data-i18n-aria="aria.robotjoke">
   <div id="joke-text"></div>
-  <button id="joke-close" aria-label="Close joke">×</button>
+  <button id="joke-close" aria-label="Close joke" data-i18n-aria="aria.closejoke">×</button>
 </div>
 <script src="translations.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
