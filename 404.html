@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/styles.css">
 
   <style>
     .page-404 {
@@ -118,9 +118,9 @@
 
       <!-- Language switcher: directory links, no widget, no flags -->
       <div class="lang-switcher" role="navigation" aria-label="Language">
-        <a href="/en/" class="lang-link lang-active" aria-current="true" lang="en">EN</a>
+        <a href="/" class="lang-link lang-active" aria-current="true" lang="en" onclick="localStorage.setItem('lang','en');return true;">EN</a>
         <span class="lang-sep" aria-hidden="true">/</span>
-        <a href="/de/" class="lang-link" lang="de" hreflang="de">DE</a>
+        <a href="/" class="lang-link" lang="de" hreflang="de" onclick="localStorage.setItem('lang','de');return true;">DE</a>
       </div>
 
       <!-- Theme toggle -->
@@ -148,8 +148,8 @@
     <a href="/#recognition">Recognition</a>
     <a href="/#contact">Contact</a>
     <div class="mobile-lang">
-      <a href="/en/" class="lang-active" aria-current="true">EN — English</a>
-      <a href="/de/" hreflang="de">DE — Deutsch</a>
+      <a href="/" class="lang-active" aria-current="true" onclick="localStorage.setItem('lang','en');return true;">EN — English</a>
+      <a href="/" hreflang="de" onclick="localStorage.setItem('lang','de');return true;">DE — Deutsch</a>
     </div>
   </div>
 </nav>
@@ -192,7 +192,7 @@
 
 <!-- Load main.js for cursor, magnetic buttons and other global behaviour -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="main.js"></script>
+<script src="/main.js"></script>
 
 <script>
 // ── Utilities ─────────────────────────────────────────────────
