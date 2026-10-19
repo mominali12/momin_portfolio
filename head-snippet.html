@@ -1,0 +1,21 @@
+<!-- Momin Ali — paste into <head>. Copy favicon.*, apple-touch-icon.png,
+     icon-*.png, site.webmanifest and og-image.png to your site root. -->
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#1D1D1F">
+<meta property="og:image" content="https://YOUR-DOMAIN/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Header logo: SVG inline-able, ~6 KB, crisp at any size -->
+<a href="/" class="site-logo" aria-label="Momin Ali — home">
+  <img src="/svg/momin-ali-lockup-horizontal.svg" alt="Momin Ali" height="40">
+</a>
+
+<!-- On a dark header, swap to the white lockup automatically: -->
+<picture>
+  <source srcset="/svg/momin-ali-lockup-horizontal-white.svg" media="(prefers-color-scheme: dark)">
+  <img src="/svg/momin-ali-lockup-horizontal.svg" alt="Momin Ali" height="40">
+</picture>
