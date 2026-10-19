@@ -1,0 +1,51 @@
+/* Momin Ali · loading screen — pair with loader.js */
+html.ml-loading{overflow:hidden;background:#FFFFFF}
+html.ml-loading body{visibility:hidden}          /* page waits underneath, no flash */
+@media (prefers-color-scheme:dark){html.ml-loading{background:#111113}}
+#ml-loader{visibility:visible}
+#ml-loader{--ml-bg:#FFFFFF;--ml-ink:#1D1D1F;--ml-mid:#6E6E73;
+  position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(22px,4vh,34px);background:var(--ml-bg);color:var(--ml-ink);
+  font-family:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+  padding:24px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left));
+  transition:opacity .7s cubic-bezier(.4,0,.2,1),visibility 0s linear .7s;cursor:default}
+@media (prefers-color-scheme:dark){#ml-loader{--ml-bg:#111113;--ml-ink:#F5F5F7;--ml-mid:#98989F}}
+#ml-loader.ml-done{opacity:0;visibility:hidden;pointer-events:none}
+#ml-loader.ml-done .ml-stage{transform:scale(1.04)}
+#ml-loader .ml-stage{display:flex;flex-direction:column;align-items:center;gap:inherit;transition:transform .7s cubic-bezier(.4,0,.2,1)}
+#ml-loader svg{display:block;overflow:visible}
+#ml-loader .ml-mark{width:clamp(112px,22vmin,168px);height:auto;aspect-ratio:1}
+#ml-loader .ml-name{width:clamp(200px,46vmin,400px);height:auto;fill:var(--ml-ink)}
+#ml-loader .ml-bar{width:clamp(120px,24vmin,180px);height:1px;background:color-mix(in srgb,var(--ml-ink) 12%,transparent);overflow:hidden;margin-top:6px}
+#ml-loader .ml-bar i{display:block;height:100%;background:var(--ml-ink);transform-origin:left;transform:scaleX(0)}
+
+/* colour roles */
+#ml-loader .kf{fill:var(--ml-ink)} #ml-loader .hf{fill:var(--ml-bg)}
+#ml-loader .hs{fill:none;stroke:var(--ml-bg)}
+#ml-loader .st path{fill:none;stroke-linejoin:miter}
+#ml-loader .st .k{stroke:var(--ml-ink)} #ml-loader .st .h{stroke:var(--ml-bg)}
+#ml-loader .tr{fill:none;stroke:var(--ml-ink);stroke-width:1.4}
+
+/* ── timeline (5 s) ── */
+#ml-loader .cp{transform-box:fill-box;transform-origin:center;animation:ml-pop .6s .1s cubic-bezier(.2,.9,.3,1.3) both}
+#ml-loader .tr{stroke-dasharray:1;animation:ml-draw .5s calc(.55s + var(--i)*.05s) cubic-bezier(.4,0,.2,1) both}
+#ml-loader .pd{transform-box:fill-box;transform-origin:center;animation:ml-pop .45s calc(.95s + var(--i)*.05s) cubic-bezier(.2,.9,.3,1.4) both}
+#ml-loader .s path{stroke-dasharray:1;animation:ml-draw 1.5s .7s cubic-bezier(.65,0,.35,1) both}
+#ml-loader .sa path{animation-delay:.85s}
+#ml-loader .ov{animation:ml-fade .25s 2.25s ease-out both}
+#ml-loader .gr{transform-origin:0 0;animation:ml-gear 2.1s .2s cubic-bezier(.2,.8,.2,1) both}
+#ml-loader .ml-name path{animation:ml-letter .7s calc(2.4s + var(--i)*.07s) cubic-bezier(.2,.8,.2,1) both}
+#ml-loader .ml-bar{animation:ml-fade .4s .2s ease-out both}
+#ml-loader .ml-bar i{animation:ml-bar 4.7s .2s cubic-bezier(.45,.05,.35,1) forwards}
+
+@keyframes ml-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes ml-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+@keyframes ml-fade{from{opacity:0}to{opacity:1}}
+@keyframes ml-gear{from{opacity:0;transform:rotate(-90deg) scale(.92)}to{opacity:1;transform:rotate(0) scale(1)}}
+@keyframes ml-letter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes ml-bar{to{transform:scaleX(1)}}
+
+@media (prefers-reduced-motion:reduce){
+  #ml-loader *{animation-duration:.01ms!important;animation-delay:0s!important}
+  #ml-loader .ml-bar i{animation:ml-bar 4.7s linear forwards!important}
+}
