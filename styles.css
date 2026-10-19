@@ -160,6 +160,8 @@ body {
   background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
   cursor: none; /* custom cursor active on desktop */
+  /* Floating pill nav: enough clearance so content scrolls fully visible */
+  padding-bottom: 100px;
   /* Theme transition: only color properties, never layout. SKILL §6.A */
   transition:
     background-color var(--theme-duration) ease,
@@ -264,23 +266,39 @@ body.cursor-clicking .cursor-dot {
 
 .nav {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  left: 50%;
+  transform: translateX(-50%);
+  /* Never full-width — floating pill centred above the page */
+  width: fit-content;
+  min-width: min(720px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
   z-index: var(--z-nav);
-  background-color: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border-bottom: 1px solid var(--border);
-  transition: transform 0.35s var(--ease-out-expo),
+  /* Frosted glass pill */
+  background-color: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  /* Shape */
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  /* Floating shadow — two layers for depth */
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.12),
+    0 2px 8px  rgba(0,0,0,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: box-shadow 0.3s ease,
               background-color 0.2s ease;
 }
 
-.nav.hidden { transform: translateY(-100%); }
+/* Always visible — no scroll-hide */
+.nav.hidden { transform: translateX(-50%); }
 
 .nav-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: 52px;
+  padding-inline: 20px;
 }
 
 .brandmark {
@@ -502,18 +520,32 @@ body.cursor-clicking .cursor-dot {
 .mobile-menu {
   display: none;
   flex-direction: column;
-  padding: 16px 24px 24px;
-  gap: 4px;
-  border-top: 1px solid var(--border);
+  padding: 12px 20px 16px;
+  gap: 0;
+  /* Floats above the pill nav, same width, centred */
+  position: fixed;
+  bottom: max(88px, calc(env(safe-area-inset-bottom, 24px) + 64px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 32px));
+  background-color: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+  z-index: calc(var(--z-nav) - 1);
 }
 .mobile-menu a {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-secondary);
-  padding-block: 10px;
+  padding-block: 11px;
   border-bottom: 1px solid var(--border);
+  transition: color 0.15s ease;
 }
 .mobile-menu a:last-child { border-bottom: none; }
+.mobile-menu a:hover { color: var(--text-primary); }
 .mobile-menu.open { display: flex; }
 
 /* ============================================================
@@ -622,7 +654,8 @@ body.cursor-clicking .cursor-dot {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-top: 64px;
+  padding-top: 0;
+  padding-bottom: 80px; /* clear the bottom nav bar */
   position: relative;
   overflow: hidden;
 }
@@ -1546,7 +1579,7 @@ body.cursor-clicking .cursor-dot {
 
 @media (max-width: 1024px) {
   :root { --section-py: 72px; }
-  .hero-inner { gap: 48px; padding-block: 60px 100px; }
+  .hero-inner { gap: 48px; padding-block: 40px 120px; }
   .caps-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
 }
 

@@ -235,18 +235,8 @@
   ───────────────────────────────────────────── */
   (function initNav() {
     const nav = document.getElementById('nav');
-    if (!nav || reducedMotion) return;
-    let prevY = window.scrollY, ticking = false;
-    document.addEventListener('scroll', () => {
-      if (ticking) return; ticking = true;
-      requestAnimationFrame(() => {
-        const y = window.scrollY;
-        if      (y > prevY && y > 80)  nav.classList.add('hidden');
-        else if (y < prevY && y > 80)  nav.classList.remove('hidden');
-        else if (y <= 80)              nav.classList.remove('hidden');
-        prevY = y; ticking = false;
-      });
-    }, { passive: true });
+    if (!nav) return;
+    // Floating pill nav is always visible — no scroll-hide.
 
     const links = document.querySelectorAll('.nav-links a');
     const ids   = ['work','capabilities','recognition','experience','contact'];
